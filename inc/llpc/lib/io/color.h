@@ -1,0 +1,65 @@
+#ifndef INCLUDE_IO_COLOR_H_
+#define INCLUDE_IO_COLOR_H_
+
+#include <efi/x86_64/efibind.h>
+#include <efi/efi.h>
+
+#ifdef __cplusplus
+#	define LLPC_COLOR_OPEN		extern "C" {
+#	define LLPC_COLOR_CLOSE		}
+#else
+#	define LLPC_COLOR_OPEN
+#	define LLPC_COLOR_CLOSE
+#endif
+
+LLPC_COLOR_OPEN
+
+#define LLPC_IO_COLOR_BLACK		 		EFI_BLACK
+#define LLPC_IO_COLOR_BLUE		  		EFI_BLUE 
+#define LLPC_IO_COLOR_GREEN		 		EFI_GREEN
+#define LLPC_IO_COLOR_CYAN		  		EFI_CYAN		 
+#define LLPC_IO_COLOR_RED		  		EFI_RED
+#define LLPC_IO_COLOR_MAGENTA	   		EFI_MAGENTA	  
+#define LLPC_IO_COLOR_BROWN		 		EFI_BROWN		
+#define LLPC_IO_COLOR_LIGHTGRAY	 		EFI_LIGHTGRAY	
+#define LLPC_IO_COLOR_BRIGHT	 		EFI_BRIGHT
+#define LLPC_IO_COLOR_DARKGRAY	  		EFI_DARKGRAY	 
+#define LLPC_IO_COLOR_LIGHTBLUE	 		EFI_LIGHTBLUE	
+#define LLPC_IO_COLOR_LIGHTGREEN		EFI_LIGHTGREEN   
+#define LLPC_IO_COLOR_LIGHTCYAN	 		EFI_LIGHTCYAN	
+#define LLPC_IO_COLOR_LIGHTRED	  		EFI_LIGHTRED	 
+#define LLPC_IO_COLOR_LIGHTMAGENTA 		EFI_LIGHTMAGENTA 
+#define LLPC_IO_COLOR_YELLOW			EFI_YELLOW	   
+#define LLPC_IO_COLOR_WHITE		 		EFI_WHITE		
+
+#define LLPC_IO_ATTR 					EFI_TEXT_ATTR
+
+#define LLPC_IO_COLOR_BG_BLACK		 	EFI_BACKGROUND_BLACK		
+#define LLPC_IO_COLOR_BG_BLUE			EFI_BACKGROUND_BLUE		 
+#define LLPC_IO_COLOR_BG_GREEN		 	EFI_BACKGROUND_GREEN		
+#define LLPC_IO_COLOR_BG_CYAN			EFI_BACKGROUND_CYAN		 
+#define LLPC_IO_COLOR_BG_RED			EFI_BACKGROUND_RED		  
+#define LLPC_IO_COLOR_BG_MAGENTA		EFI_BACKGROUND_MAGENTA	  
+#define LLPC_IO_COLOR_BG_BROWN		 	EFI_BACKGROUND_BROWN		
+#define LLPC_IO_COLOR_BG_LIGHTGRAY	 	EFI_BACKGROUND_LIGHTGRAY	
+
+extern UINT8 llpc_io_originalFg;
+extern UINT8 llpc_io_originalBg;
+
+typedef enum LLPC_IO_ScreenTypes
+{
+	LLPC_IOST_None = 0,
+
+	LLPC_IOST_BG = 1 << 0,
+	LLPC_IOST_FG = 1 << 1,
+
+	LLPC_IOST_ALL = LLPC_IOST_BG | LLPC_IOST_FG
+} LLPC_IO_ScreenTypes;
+
+void llpc_io_setColor(const UINT8 color);
+void llpc_io_resetColor(const LLPC_IO_ScreenTypes screenType);
+
+LLPC_COLOR_CLOSE
+
+#endif  // INCLUDE_IO_COLOR_H_
+

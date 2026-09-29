@@ -1,0 +1,10 @@
+{
+  "exeName": "llpc",
+  "projectName": "llpc",
+  "fullName": "Low-Level Portable C",
+  "projectPrefix": "LLPC",
+  "version": "0.0.1",
+  "versionState": "dev",
+  "versionSTD": 1
+}
+
