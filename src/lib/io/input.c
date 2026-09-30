@@ -4,6 +4,26 @@
 #include "llpc/lib/io/input.h"
 #include "llpc/lib/globals.h"
 
+EFI_INPUT_KEY llpc_io_extReadchar(void)
+{
+	EFI_INPUT_KEY key = {0};
+
+	EFI_STATUS status = uefi_call_wrapper(
+		LLPC_SystemTable->BootServices->WaitForEvent,
+		3, 1,
+		&LLPC_SystemTable->ConIn->WaitForKey, LLPC_NULL);
+
+	if (EFI_ERROR(status))
+		return key;
+
+	status = LLPC_SystemTable->ConIn->ReadKeyStroke(
+		LLPC_SystemTable->ConIn,
+		&key
+	);
+
+	return key;
+}
+
 EFI_STATUS llpc_io_extReadline(CHAR16 *buff, const UINTN cap, const CHAR16 del)
 {
 	if (!buff || cap <= 1 || del == L'\0')
@@ -13,23 +33,7 @@ EFI_STATUS llpc_io_extReadline(CHAR16 *buff, const UINTN cap, const CHAR16 del)
 
 	while (1)
 	{
-		EFI_INPUT_KEY key;
-
-		EFI_STATUS status = uefi_call_wrapper(
-			LLPC_SystemTable->BootServices->WaitForEvent,
-			3, 1,
-			&LLPC_SystemTable->ConIn->WaitForKey, LLPC_NULL);
-
-		if (EFI_ERROR(status))
-			return status;
-
-		status = LLPC_SystemTable->ConIn->ReadKeyStroke(
-			LLPC_SystemTable->ConIn,
-			&key
-		);
-
-		if (EFI_ERROR(status))
-			return status;
+		EFI_INPUT_KEY key = llpc_io_extReadchar();
 
 		if (key.UnicodeChar == del)
 		{

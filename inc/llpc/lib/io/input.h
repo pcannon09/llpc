@@ -13,7 +13,10 @@
 
 LLPC_INPUT_OPEN
 
+EFI_INPUT_KEY llpc_io_extReadchar(void);
 EFI_STATUS llpc_io_extReadline(CHAR16 *buff, const UINTN cap, const CHAR16 del);
+
+#define llpc_io_readchar 		llpc_io_extReadchar().UnicodeChar
 
 LLPC_INPUT_CLOSE
 
