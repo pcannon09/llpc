@@ -46,6 +46,9 @@ option(LLPC_BUILD_TIME "Build LLPC Time module" ON)
 option(LLPC_BUILD_STRING "Build LLPC String module" ON)
 option(LLPC_BUILD_ALLOC "Build LLPC Allocator module" ON)
 option(LLPC_BUILD_SOUND "Build LLPC Sound module" ON)
+option(LLPC_BUILD_SCREEN "Build LLPC Screen module" ON)
+option(LLPC_BUILD_PROCESS "Build LLPC Process module" ON)
+option(LLPC_BUILD_VECTOR "Build LLPC Vector application" ON)
 option(LLPC_BUILD_UEFI "Build LLPC UEFI application" ON)
 
 option(LLPC_BUILD_TEST "Build LLPC host test executable" OFF)
@@ -100,6 +103,18 @@ set(LLPC_STRING_SOURCES
 
 set(LLPC_FMT_SOURCES
 		${SRC_DIR}/lib/fmt/fmtConvert.c
+)
+
+set(LLPC_VECTOR_SOURCES
+		${SRC_DIR}/lib/vector/vector.c
+)
+
+set(LLPC_PROCESS_SOURCES
+		${SRC_DIR}/lib/process/process.c
+)
+
+set(LLPC_SCREEN_SOURCES
+		${SRC_DIR}/lib/screen/screen.c
 )
 
 set(LLPC_SOUND_SOURCES
@@ -195,8 +210,25 @@ add_library(${projectName} STATIC
 
 llpc_configure_library(${projectName})
 
-# String library
+# Process library
+if(LLPC_BUILD_PROCESS)
+	add_library(${projectName}_process STATIC
+		${LLPC_PROCESS_SOURCES}
+	)
 
+	llpc_configure_library(${projectName}_process)
+endif()
+
+# Screen library
+if(LLPC_BUILD_SCREEN)
+	add_library(${projectName}_screen STATIC
+		${LLPC_SCREEN_SOURCES}
+	)
+
+	llpc_configure_library(${projectName}_screen)
+endif()
+
+# String library
 if(LLPC_BUILD_STRING)
 	add_library(${projectName}_string STATIC
 		${LLPC_STRING_SOURCES}
@@ -212,6 +244,16 @@ if(LLPC_BUILD_SOUND)
 	)
 
 	llpc_configure_library(${projectName}_sound)
+endif()
+
+# Vector library
+
+if(LLPC_BUILD_VECTOR)
+	add_library(${projectName}_vector STATIC
+		${LLPC_VECTOR_SOURCES}
+	)
+
+	llpc_configure_library(${projectName}_vector)
 endif()
 
 # FMT library
@@ -442,6 +484,12 @@ if(LLPC_BUILD_UEFI)
 		)
 	endif()
 
+	if(LLPC_BUILD_VECTOR)
+		list(APPEND LLPC_UEFI_SOURCES
+			${LLPC_VECTOR_SOURCES}
+		)
+	endif()
+
 	if(LLPC_BUILD_IO)
 		list(APPEND LLPC_UEFI_SOURCES
 			${LLPC_IO_SOURCES}
@@ -451,6 +499,18 @@ if(LLPC_BUILD_UEFI)
 	if(LLPC_BUILD_ALLOC)
 		list(APPEND LLPC_UEFI_SOURCES
 			${LLPC_ALLOC_SOURCES}
+		)
+	endif()
+
+	if(LLPC_BUILD_PROCESS)
+		list(APPEND LLPC_UEFI_SOURCES
+			${LLPC_PROCESS_SOURCES}
+		)
+	endif()
+
+	if(LLPC_BUILD_SCREEN)
+		list(APPEND LLPC_UEFI_SOURCES
+			${LLPC_SCREEN_SOURCES}
 		)
 	endif()
 
