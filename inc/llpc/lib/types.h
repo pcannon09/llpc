@@ -25,6 +25,7 @@ typedef enum LLPC_SystemError
 	LLPC_SE_OK,
 
 	LLPC_SE_InitNull,
+	LLPC_SE_HeapInit,
 
 	LLPC_SE_UNKNOWN,
 } LLPC_SystemError;
