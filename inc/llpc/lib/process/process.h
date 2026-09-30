@@ -1,0 +1,29 @@
+#ifndef INCLUDE_SIGNALS_SIGNALS_H_
+#define INCLUDE_SIGNALS_SIGNALS_H_
+
+#ifdef __cplusplus
+# 	define LLPC_CPP_PROCESS_OPEN 		extern "C" {
+# 	define LLPC_CPP_PROCESS_CLOSE 		}
+#else
+# 	define LLPC_CPP_PROCESS_OPEN
+# 	define LLPC_CPP_PROCESS_CLOSE
+#endif
+
+LLPC_CPP_PROCESS_OPEN
+
+typedef enum LLPC_ScreenSignals
+{
+	LLPC_SSIG_NONE = 0,
+	LLPC_SSIG_ERROR,
+
+	LLPC_SSIG_STOP,
+	LLPC_SSIG_KILL,
+
+	LLPC_SSIG_BG,
+	LLPC_SSIG_FG,
+} LLPC_ScreenSignals;
+
+LLPC_CPP_PROCESS_CLOSE
+
+#endif  // INCLUDE_SIGNALS_SIGNALS_H_
+
