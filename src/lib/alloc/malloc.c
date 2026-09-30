@@ -1,27 +1,44 @@
 #include "llpc/lib/alloc/malloc.h"
 #include "llpc/lib/alloc/alloc_impl.h"
 
-void *llpc_malloc(size_t size)
+VOID *llpc_malloc(UINTN size)
 {
-	if (!size)
-		return NULL;
-
-	size = LLPC_ALLOC_ALIGN(size);
-
-	LLPC_Alloc_Block *blk = llpc_alloc_findFree(size);
-
-	if (blk)
-	{
-		blk->free = 0;
-
-		return blk + 1;
-	}
-
-	blk = llpc_alloc_createBlock(size);
-
-	if (!blk)
+	if (size == 0)
 		return LLPC_NULL;
 
-	return blk + 1;
+	LLPC_AllocBlock *block;
+
+	size = llpc_alignUp(size, LLPC_DEFAULT_ALIGNMENT);
+
+	for (block = llpc_allocHeap.first ;
+			block != LLPC_NULL ;
+			block = block->next)
+	{
+		if (!block->free || block->size < size)
+			continue;
+
+		// If block size is bigger than what the alloc allows:
+		// Move forward
+		if (block->size >=
+				size + sizeof(LLPC_AllocBlock) + LLPC_DEFAULT_ALIGNMENT)
+		{
+			LLPC_AllocBlock *split =
+				(LLPC_AllocBlock*)
+				((UINT8*)(block + 1)
+				 + size);
+
+			split->size = block->size - size - sizeof(LLPC_AllocBlock);
+			split->free = llpctrue;
+
+			split->next = block->next;
+			split->prev = block;
+		}
+
+		block->free = llpcfalse;
+
+		return (VOID*)(block + 1);
+	}
+
+	return LLPC_NULL;
 }
 

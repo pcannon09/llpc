@@ -1,97 +1,66 @@
 #include "llpc/lib/alloc/alloc_impl.h"
+#include "llpc/lib/types.h"
 
-extern void *__llpc_sysBrk(void *addr);
+#include <efi/efidef.h>
+#include <efi/x86_64/efibind.h>
 
-void *llpc_alloc_sbrk(const size_t increment)
+EFI_STATUS llpc_alloc_heapInit(const UINTN pages)
 {
-	if (!__llpc_alloc_heapEnd)
-		__llpc_alloc_heapEnd = __llpc_sysBrk(0);
+	EFI_PHYSICAL_ADDRESS addr = 0;
 
-	void *old = __llpc_alloc_heapEnd;
-	void *new = (char*)old + increment;
+	if (pages == 0)
+		return EFI_INVALID_PARAMETER;
 
-	if (__llpc_sysBrk(new) != new)
-		return LLPC_NULL;
+	// Get a valid (or invalid) address
+	const EFI_STATUS status = uefi_call_wrapper(
+			BS->AllocatePages, 4,
+			AllocateAnyPages, EfiLoaderData,
+			pages, &addr);
 
-	__llpc_alloc_heapEnd = new;
+	// If invalid, return error
+	if (EFI_ERROR(status))
+		return status;
 
-	return old;
+	// Setup heap allocator for current base
+	llpc_allocHeap.base = (VOID*)(UINTN)addr;
+	llpc_allocHeap.size = pages * LLPC_HEAP_PAGE_SIZE;
+
+	// Setup heap allocator for first placement
+	llpc_allocHeap.first = llpc_allocHeap.base;
+	llpc_allocHeap.first->size =
+		llpc_allocHeap.size - sizeof(LLPC_AllocBlock);
+
+	llpc_allocHeap.first->free = llpctrue;
+	llpc_allocHeap.first->next = LLPC_NULL;
+	llpc_allocHeap.first->prev = LLPC_NULL;
+
+	return EFI_SUCCESS;
 }
 
-LLPC_Alloc_Block *llpc_alloc_findFree(const size_t size)
+void llpc_heapMerge(LLPC_AllocBlock *block)
 {
-	LLPC_Alloc_Block *blk = __llpc_alloc_head;
-
-	while (blk)
+	// Merge next block to main
+	if (block->next && block->next->free)
 	{
-		if (blk->free && blk->size >= size)
-			return blk; // Found free space
+		LLPC_AllocBlock *next = block->next;
 
-		blk = blk->next;
+		block->size += sizeof(LLPC_AllocBlock) + next->size;
+		block->next = next->next;
+
+		if (block->next)
+			block->next->prev = block;
 	}
 
-	return NULL;
-}
+	// Merge previous block to main
+	if (block->prev && block->prev->free)
+	{
+		LLPC_AllocBlock *prev = block->prev;
 
-LLPC_Alloc_Block *llpc_alloc_createBlock(const size_t size)
-{
-	LLPC_Alloc_Block *blk = llpc_alloc_sbrk(sizeof(LLPC_Alloc_Block) + size);
+		block->size += sizeof(LLPC_AllocBlock) + block->size;
+		block->next = prev->next;
 
-	if (!blk)
-		return NULL;
-
-	blk->size = size;
-	blk->free = 0;
-	blk->next = NULL;
-
-	if (!__llpc_alloc_head)
-		__llpc_alloc_head = blk;
-
-	else __llpc_alloc_tail->next = blk;
-
-	__llpc_alloc_tail = blk;
-
-	return blk;
-}
-
-llpc_bool llpc_alloc_canExpandPlace(const LLPC_Alloc_Block *blk, const size_t newSize)
-{
-	if (!blk || newSize == 0)
-		return llpcfalse;
-
-	LLPC_Alloc_Block *next = blk->next;
-
-	if (!next)
-		return llpcfalse;
-
-	if (!next->free)
-		return llpcfalse;
-
-	const size_t total =
-		blk->size + sizeof(LLPC_Alloc_Block) +
-		next->size;
-
-	return total >= newSize;
-}
-
-llpc_bool llpc_alloc_mergeNextBlk(LLPC_Alloc_Block *blk)
-{
-	if (!blk)
-		return llpcfalse;
-
-	LLPC_Alloc_Block *next = blk->next;
-
-	if (!next)
-		return llpcfalse;
-
-	blk->size += sizeof(LLPC_Alloc_Block) + next->size;
-	blk->next = next->next;
-
-	if (__llpc_alloc_tail == next)
-		__llpc_alloc_tail = blk;
-
-	else return llpcfalse;
-
-	return llpctrue;
+		if (block->next)
+			prev->next->prev = block;
+	}
 }
 

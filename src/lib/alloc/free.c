@@ -1,36 +1,18 @@
 #include "llpc/lib/alloc/free.h"
 #include "llpc/lib/alloc/alloc_impl.h"
 
-llpc_bool llpc_ffree(void *ptr)
+llpc_bool llpc_free(VOID *ptr)
 {
 	if (!ptr)
 		return llpcfalse;
 
-	LLPC_Alloc_Block *blk = (LLPC_Alloc_Block*)ptr - 1;
+	LLPC_AllocBlock *block;
 
-	if (!blk)
-		return llpcfalse;
+	block = ((LLPC_AllocBlock*)ptr) - 1;
+	block->free = llpctrue;
 
-	blk->free = 1;
+	llpc_heapMerge(block);
 
 	return llpctrue;
-}
-
-llpc_bool llpc_impl_free(void **ptr)
-{
-	if (!ptr || !*ptr)
-		return llpcfalse;
-
-	const llpc_bool freeRes =
-		llpc_ffree(ptr);
-
-	// Return early if failed
-	// Do not set it to `LLPC_NULL`
-	if (!freeRes)
-		return llpcfalse;
-
-	*ptr = LLPC_NULL;
-
-	return freeRes;
 }
 

@@ -1,7 +1,7 @@
 #ifndef INCLUDE_ALLOC_MALLOC_H_
 #define INCLUDE_ALLOC_MALLOC_H_
 
-#include <stddef.h>
+#include <efi/efi.h>
 
 #ifdef __cplusplus
 # 	define LLPC_CPP_MALLOC_OPEN 		extern "C" {
@@ -13,7 +13,7 @@
 
 LLPC_CPP_MALLOC_OPEN
 
-void *llpc_malloc(size_t size);
+VOID *llpc_malloc(UINTN size);
 
 LLPC_CPP_MALLOC_CLOSE
 

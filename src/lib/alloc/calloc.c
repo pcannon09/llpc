@@ -1,27 +1,27 @@
-#include <stdint.h>
-
 #include "llpc/lib/alloc/calloc.h"
 #include "llpc/lib/alloc/malloc.h"
 
-extern void __llpc_memzero(void *ptr, size_t len);
-
-void *llpc_calloc(const size_t nmemb, const size_t size)
+VOID *llpc_calloc(UINTN count, UINTN size)
 {
-	if (!nmemb || !size)
-		return LLPC_NULL;
+	UINT8 *ptr;
+	UINTN total;
+	UINTN i;
 
-	// If this condition is met; overflow prevented
-	if (nmemb > SIZE_MAX / size)
+	if (count != 0 && size > (~(UINTN)0) / count)
 		return NULL;
 
-	const size_t total = nmemb * size;
-	void *ptr = llpc_malloc(total);
+	total = count * size;
+
+	if (total == 0)
+		return NULL;
+
+	ptr = llpc_malloc(total);
 
 	if (!ptr)
 		return NULL;
 
-	// Fill `ptr` full of *zeros*
-	__llpc_memzero(ptr, total);
+	for (i = 0; i < total; i++)
+		ptr[i] = 0;
 
 	return ptr;
 }

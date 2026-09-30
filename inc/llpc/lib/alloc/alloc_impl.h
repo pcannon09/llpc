@@ -1,6 +1,9 @@
 #ifndef INCLUDE_ALLOC_ALLOCIMPL_H_
 #define INCLUDE_ALLOC_ALLOCIMPL_H_
 
+#include <efi/efi.h>
+#include <efi/efilib.h>
+
 #include <stddef.h>
 
 #include "llpc/lib/types.h"
@@ -15,39 +18,41 @@
 
 LLPC_CPP_ALLOCIMPL_OPEN
 
-typedef struct LLPC_Alloc_Block
-{
-	struct LLPC_Alloc_Block *next;
-	struct LLPC_Alloc_Block *prev;
-
-	size_t size;
-	int free;
-} LLPC_Alloc_Block;
-
-static LLPC_Alloc_Block *__llpc_alloc_head = LLPC_NULL;
-static LLPC_Alloc_Block *__llpc_alloc_tail = LLPC_NULL;
-
-static void *__llpc_alloc_heapEnd = LLPC_NULL;
-
-#ifndef LLPC_ALLOC_ALIGNMENT
-# 	define LLPC_ALLOC_ALIGNMENT 		16
+#ifndef LLPC_HEAP_PAGE_SIZE
+# 	define LLPC_HEAP_PAGE_SIZE 		4096
 #endif
 
-#define LLPC_ALLOC_ALIGN(x) 		(((x) + LLPC_ALLOC_ALIGNMENT - 1) & ~((size_t)LLPC_ALLOC_ALIGNMENT - 1))
+#ifndef LLPC_DEFAULT_ALIGNMENT
+# 	define LLPC_DEFAULT_ALIGNMENT 	16
+#endif
 
-enum LLPC_Alloc_Method
+typedef struct LLPC_AllocBlock
 {
-	LLPC_ALLOC_METHOD_CALLOC,
-	LLPC_ALLOC_METHOD_MALLOC
-};
+	// Current block
+	UINTN size;
+	llpc_bool free; // Is it a free block?
 
-void *llpc_alloc_sbrk(const size_t increment);
+	// Allocation blocks
+	struct LLPC_AllocBlock *next;
+	struct LLPC_AllocBlock *prev;
+} LLPC_AllocBlock;
 
-LLPC_Alloc_Block *llpc_alloc_findFree(const size_t size);
-LLPC_Alloc_Block *llpc_alloc_createBlock(const size_t size);
+typedef struct LLPC_AllocHeap
+{
+	VOID *base;
+	UINTN size;
 
-llpc_bool llpc_alloc_mergeNextBlk(LLPC_Alloc_Block *blk);
-llpc_bool llpc_alloc_canExpandPlace(const LLPC_Alloc_Block *blk, const size_t newSize);
+	LLPC_AllocBlock *first;
+} LLPC_AllocHeap;
+
+static LLPC_AllocHeap llpc_allocHeap;
+
+EFI_STATUS llpc_alloc_heapInit(const UINTN pages);
+
+void llpc_heapMerge(LLPC_AllocBlock *block);
+
+static inline UINTN llpc_alignUp(const UINTN value, const UINTN alignment)
+{ return (value + alignment - 1) & ~(alignment - 1); }
 
 LLPC_CPP_ALLOCIMPL_CLOSE
 

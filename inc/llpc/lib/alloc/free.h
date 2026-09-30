@@ -1,6 +1,8 @@
 #ifndef INCLUDE_ALLOC_FREE_H_
 #define INCLUDE_ALLOC_FREE_H_
 
+#include <efi/efi.h>
+
 #include "llpc/lib/types.h"
 
 #ifdef __cplusplus
@@ -13,11 +15,13 @@
 
 LLPC_CPP_FREE_OPEN
 
-llpc_bool llpc_ffree(void *ptr);
-llpc_bool llpc_impl_free(void **ptr);
+llpc_bool llpc_free(VOID *ptr);
 
-#define llpc_free(_ptr) \
-	llpc_impl_free((void**)&_ptr)
+#define llpc_nullify(_ptr) 		\
+	do {						\
+		llpc_free(_ptr); 		\
+		_ptr = LLPC_NULL; 		\
+	} while (0)
 
 LLPC_CPP_FREE_CLOSE
 

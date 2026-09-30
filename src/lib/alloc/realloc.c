@@ -1,56 +1,38 @@
 #include "llpc/lib/alloc/realloc.h"
-#include "llpc/lib/alloc/calloc.h"
+#include "llpc/lib/alloc/alloc_impl.h"
 #include "llpc/lib/alloc/free.h"
 #include "llpc/lib/alloc/malloc.h"
 
-#include "llpc/lib/string/string.h"
-
-void *llpc_impl_alloc_realloc(void *ptr, size_t newSize,
-		enum LLPC_Alloc_Method allocMethod)
+VOID *llpc_realloc(VOID *ptr, UINTN size)
 {
-	if (!ptr || newSize == 0)
-		return LLPC_NULL;
+	LLPC_AllocBlock *block;
+	VOID *newPtr;
+	UINTN copySize;
 
-	newSize = LLPC_ALLOC_ALIGN(newSize);
+	if (ptr == NULL)
+		return llpc_malloc(size);
 
-	LLPC_Alloc_Block *blk = (LLPC_Alloc_Block*)ptr - 1;
-
-	if (!blk)
+	if (size == 0)
+	{
+		llpc_nullify(ptr);
 		return NULL;
+	}
 
-	// No need to realloc
-	if (blk->size >= newSize)
+	block = ((LLPC_AllocBlock*)ptr) - 1;
+
+	if (size <= block->size)
 		return ptr;
 
-	void *newPtr = NULL;
-
-	// * Use `llpc_calloc()` or `llpc_malloc()` function
-	// 	 User will later use `llpc_recalloc()` or `llpc_remalloc` wrappers
-	// 	 Which will automatically specify `allocMethod`
-	switch (allocMethod)
-	{
-		case LLPC_ALLOC_METHOD_CALLOC:
-		{
-			newPtr = llpc_calloc(1, newSize);
-
-			break;
-		}
-
-		case LLPC_ALLOC_METHOD_MALLOC:
-		{
-			newPtr = llpc_malloc(newSize);
-
-			break;
-		}
-
-		default: return NULL;
-	};
+	newPtr = llpc_malloc(size);
 
 	if (!newPtr)
 		return NULL;
 
-	llpc_memcpy(newPtr, ptr, blk->size);
-	llpc_free(ptr);
+	copySize = block->size;
+
+	CopyMem(newPtr, ptr, copySize);
+
+	llpc_nullify(ptr);
 
 	return newPtr;
 }
