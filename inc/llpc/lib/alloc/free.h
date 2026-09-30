@@ -23,6 +23,8 @@ llpc_bool llpc_free(VOID *ptr);
 		_ptr = LLPC_NULL; 		\
 	} while (0)
 
+#define LLPC_FREE 		llpc_nullify
+
 LLPC_CPP_FREE_CLOSE
 
 #endif  // INCLUDE_ALLOC_FREE_H_
