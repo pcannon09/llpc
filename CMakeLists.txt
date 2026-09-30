@@ -45,6 +45,7 @@ option(LLPC_BUILD_LOGGING "Build LLPC Logging module" ON)
 option(LLPC_BUILD_TIME "Build LLPC Time module" ON)
 option(LLPC_BUILD_STRING "Build LLPC String module" ON)
 option(LLPC_BUILD_ALLOC "Build LLPC Allocator module" ON)
+option(LLPC_BUILD_SOUND "Build LLPC Sound module" ON)
 option(LLPC_BUILD_UEFI "Build LLPC UEFI application" ON)
 
 option(LLPC_BUILD_TEST "Build LLPC host test executable" OFF)
@@ -70,45 +71,53 @@ set(UEFI_DIR "${SRC_DIR}/platform/uefi")
 # Sources
 
 set(LLPC_HEADERS
-	${INC_DIR}/predefines.h
+		${INC_DIR}/predefines.h
 )
 
 set(LLPC_SOURCES
-	${SRC_DIR}/lib/globals.c
+		${SRC_DIR}/lib/globals.c
 )
 
 set(LLPC_LOGGING_SOURCES
-	${SRC_DIR}/lib/logging/logger.c
+		${SRC_DIR}/lib/logging/logger.c
 )
 
 set(LLPC_TIME_SOURCES
-	${SRC_DIR}/lib/time/time.c
-	${SRC_DIR}/lib/time/date.c
+		${SRC_DIR}/lib/time/time.c
+		${SRC_DIR}/lib/time/date.c
+		${SRC_DIR}/lib/time/sleep.c
 )
 
 set(LLPC_IO_SOURCES
-	${SRC_DIR}/lib/io/input.c
-	${SRC_DIR}/lib/io/output.c
-	${SRC_DIR}/lib/io/color.c
+		${SRC_DIR}/lib/io/input.c
+		${SRC_DIR}/lib/io/output.c
+		${SRC_DIR}/lib/io/color.c
 )
 
 set(LLPC_STRING_SOURCES
-	${SRC_DIR}/lib/string/string.c
+		${SRC_DIR}/lib/string/string.c
 )
 
 set(LLPC_FMT_SOURCES
-	${SRC_DIR}/lib/fmt/fmtConvert.c
+		${SRC_DIR}/lib/fmt/fmtConvert.c
+)
+
+set(LLPC_SOUND_SOURCES
+		${SRC_DIR}/lib/sound/controller.c
+		${SRC_DIR}/lib/sound/sound.c
 )
 
 set(LLPC_ALLOC_SOURCES
-	${SRC_DIR}/lib/alloc/alloc_impl.c
-	${SRC_DIR}/lib/alloc/calloc.c
-	${SRC_DIR}/lib/alloc/free.c
-	${SRC_DIR}/lib/alloc/malloc.c
-	${SRC_DIR}/lib/alloc/realloc.c
+		${SRC_DIR}/lib/alloc/alloc_impl.c
+		${SRC_DIR}/lib/alloc/calloc.c
+		${SRC_DIR}/lib/alloc/free.c
+		${SRC_DIR}/lib/alloc/malloc.c
+		${SRC_DIR}/lib/alloc/realloc.c
 )
 
-set(LLPC_ASM_SOURCES)
+set(LLPC_ASM_SOURCES
+		${SRC_DIR}/core/x86_64/sound.asm
+)
 
 # Common library compiler options
 
@@ -173,7 +182,6 @@ function(llpc_configure_library target)
 	if(LLPC_ENABLE_SANITIZER)
 		target_compile_options(${target}
 			PRIVATE
-				-fsanitize=address,undefined
 				-fno-omit-frame-pointer
 		)
 	endif()
@@ -195,6 +203,15 @@ if(LLPC_BUILD_STRING)
 	)
 
 	llpc_configure_library(${projectName}_string)
+endif()
+
+# Sound library
+if(LLPC_BUILD_SOUND)
+	add_library(${projectName}_sound STATIC
+		${LLPC_SOUND_SOURCES}
+	)
+
+	llpc_configure_library(${projectName}_sound)
 endif()
 
 # FMT library
@@ -308,7 +325,6 @@ if(LLPC_BUILD_TEST)
 	if(LLPC_ENABLE_SANITIZER)
 		target_link_options(${projectName}_test
 			PRIVATE
-				-fsanitize=address,undefined
 		)
 	endif()
 endif()
@@ -411,6 +427,12 @@ if(LLPC_BUILD_UEFI)
 	if(LLPC_BUILD_STRING)
 		list(APPEND LLPC_UEFI_SOURCES
 			${LLPC_STRING_SOURCES}
+		)
+	endif()
+
+	if(LLPC_BUILD_SOUND)
+		list(APPEND LLPC_UEFI_SOURCES
+			${LLPC_SOUND_SOURCES}
 		)
 	endif()
 
