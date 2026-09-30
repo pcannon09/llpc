@@ -1,8 +1,9 @@
 #ifndef INCLUDE_IO_COLOR_H_
 #define INCLUDE_IO_COLOR_H_
 
-#include <efi/x86_64/efibind.h>
 #include <efi/efi.h>
+
+#include "llpc/lib/types.h"
 
 #ifdef __cplusplus
 #	define LLPC_COLOR_OPEN		extern "C" {
@@ -58,6 +59,8 @@ typedef enum LLPC_IO_ScreenTypes
 
 void llpc_io_setColor(const UINT8 color);
 void llpc_io_resetColor(const LLPC_IO_ScreenTypes screenType);
+
+llpc_bool llpc_io_isBgColor(const UINT8 color);
 
 LLPC_COLOR_CLOSE
 
