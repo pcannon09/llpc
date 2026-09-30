@@ -22,7 +22,10 @@ void llpc_logecho(CHAR16 *msg)
 
 void llpc_log(const LLPC_LogLevel level, const char *msg)
 {
-	if (level < llpc_appData.logLevel && level != LLPC_LL_None)
+	if (llpc_appData.logLevel == LLPC_LL_None)
+		return;
+
+	if (level < llpc_appData.logLevel)
 		return;
 
 	CHAR16 timeBuff[llpc_strlen(__LLPC_timeBuff_TIME_LOG_EXAMPLE) + 1];
@@ -52,6 +55,6 @@ void llpc_log(const LLPC_LogLevel level, const char *msg)
 
 	llpc_logecho(timeBuff);
 	llpc_logecho(messageC16);
-	llpc_logecho(L"\n");
+	llpc_logecho(L"\r\n");
 }
 

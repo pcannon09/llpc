@@ -24,11 +24,11 @@ typedef enum LLPC_LogLevel
 {
 	LLPC_LL_None = 0,
 
-	LLPC_LL_Verbose,
-	LLPC_LL_Log,
-	LLPC_LL_Warning,
-	LLPC_LL_Error,
-	LLPC_LL_Fatal,
+	LLPC_LL_Verbose = 10,
+	LLPC_LL_Log = 20,
+	LLPC_LL_Warning = 30,
+	LLPC_LL_Error = 40,
+	LLPC_LL_Fatal = 50,
 } LLPC_LogLevel;
 
 typedef struct LLPC_AppData
@@ -45,7 +45,7 @@ extern LLPC_AppData llpc_appData;
 extern EFI_HANDLE LLPC_ImageHandle;
 extern EFI_SYSTEM_TABLE *LLPC_SystemTable;
 
-LLPCAPI LLPC_SystemError llpc_initialize(const LLPC_AppData appdata,
+LLPC_SystemError llpc_initialize(LLPC_AppData appdata,
 		EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable);
 
 LLPC_GLOBALS_CLOSE
