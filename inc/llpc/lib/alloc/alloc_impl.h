@@ -19,7 +19,7 @@
 LLPC_CPP_ALLOCIMPL_OPEN
 
 #ifndef LLPC_HEAP_PAGE_SIZE
-# 	define LLPC_HEAP_PAGE_SIZE 		4096
+# 	define LLPC_HEAP_PAGE_SIZE 		EFI_PAGE_SIZE
 #endif
 
 #ifndef LLPC_DEFAULT_ALIGNMENT
@@ -45,7 +45,7 @@ typedef struct LLPC_AllocHeap
 	LLPC_AllocBlock *first;
 } LLPC_AllocHeap;
 
-static LLPC_AllocHeap llpc_allocHeap;
+extern LLPC_AllocHeap llpc_allocHeap;
 
 EFI_STATUS llpc_alloc_heapInit(const UINTN pages);
 
