@@ -152,19 +152,13 @@ __backupExecutable() {
 # BUILD
 
 __compileSoftware() {
-	local output
-
 	set -o pipefail
 
-	output=$(cmake --build "$BUILD_DIR" -j"$cores" -v 2>&1 | tee /dev/stderr)
-
-	if [[ $? -ne 0 ]]; then
+	if ! cmake --build "$BUILD_DIR" -j"$cores" -v; then
 		exit 1
 	fi
 
-	if ! grep -Eiq 'no work|nothing to' <<< "$output"; then
-		./utils/exec/qemuBuild.sh
-	fi
+	./utils/exec/qemuBuild.sh
 }
 
 # CMAKE MACROS
