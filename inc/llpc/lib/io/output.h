@@ -20,7 +20,7 @@ typedef enum LLPC_OutputType
 {
 	LLPC_OT_Clear,
 	LLPC_OT_SetCursorState,
-	LLPC_OT_CGoto, // Cursor Goto
+	LLPC_OT_CurGoto, // Cursor Goto
 } LLPC_OutputType;
 
 LLPCAPI LLPC_IOError llpc_io_echo(CHAR16 *message);
