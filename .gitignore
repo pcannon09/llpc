@@ -42,11 +42,6 @@ CTestTestfile.cmake
 coverage/
 lcov.info
 
-# Debugging / crash dumps
-core
-core.*
-*.core
-
 # Compiled binaries / objects
 *.o
 *.obj
