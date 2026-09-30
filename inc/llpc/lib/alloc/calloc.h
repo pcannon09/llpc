@@ -3,8 +3,6 @@
 
 #include <stddef.h>
 
-#include "llpc/lib/types.h"
-
 #ifdef __cplusplus
 # 	define LLPC_CPP_CALLOC_OPEN 		extern "C" {
 # 	define LLPC_CPP_CALLOC_CLOSE 		}
