@@ -4,9 +4,7 @@
 #include "llpc/lib/alloc/free.h"
 #include "llpc/lib/alloc/realloc.h"
 
-#include "llpc/lib/string/string.h"
 #include "llpc/lib/types.h"
-#include <efi/efilib.h>
 
 LLPC_Vector llpc_vector_init(const size_t cap, const llpc_bool dynamic)
 {
@@ -18,11 +16,7 @@ LLPC_Vector llpc_vector_init(const size_t cap, const llpc_bool dynamic)
 		.vec = LLPC_NULL
 	};
 
-	Print(L"calloc: cap=%u size=%u\r\n", cap, sizeof(*vec.vec));
-
 	vec.vec = llpc_calloc(cap, sizeof(*vec.vec));
-
-	Print(L"calloc result: %p\r\n", vec.vec);
 
 	if (!vec.vec)
 		return vec;

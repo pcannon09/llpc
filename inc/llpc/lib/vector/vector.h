@@ -28,7 +28,7 @@ typedef struct LLPC_Vector
 	size_t cap;
 	size_t size;
 
-	const llpc_bool dynamic;
+	llpc_bool dynamic;
 	llpc_bool __initialized;
 } LLPC_Vector;
 
