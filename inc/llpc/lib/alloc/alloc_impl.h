@@ -41,6 +41,7 @@ typedef struct LLPC_AllocHeap
 {
 	VOID *base;
 	UINTN size;
+	UINTN pages;
 
 	LLPC_AllocBlock *first;
 } LLPC_AllocHeap;
@@ -48,6 +49,7 @@ typedef struct LLPC_AllocHeap
 extern LLPC_AllocHeap llpc_allocHeap;
 
 EFI_STATUS llpc_alloc_heapInit(const UINTN pages);
+EFI_STATUS llpc_alloc_heapDestroy(void);
 
 void llpc_heapMerge(LLPC_AllocBlock *block);
 

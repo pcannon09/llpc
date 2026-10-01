@@ -11,21 +11,21 @@ EFI_STATUS llpc_alloc_heapInit(const UINTN pages)
 	if (pages == 0)
 		return EFI_INVALID_PARAMETER;
 
-	// Get a valid (or invalid) address
 	const EFI_STATUS status = uefi_call_wrapper(
-			BS->AllocatePages, 4,
-			AllocateAnyPages, EfiLoaderData,
-			pages, &addr);
+		BS->AllocatePages, 4,
+		AllocateAnyPages,
+		EfiLoaderData,
+		pages,
+		&addr
+	);
 
-	// If invalid, return error
 	if (EFI_ERROR(status))
 		return status;
 
-	// Setup heap allocator for current base
-	llpc_allocHeap.base = (VOID*)(UINTN)addr;
+	llpc_allocHeap.base = (VOID *)(UINTN)addr;
 	llpc_allocHeap.size = pages * LLPC_HEAP_PAGE_SIZE;
+	llpc_allocHeap.pages = pages;
 
-	// Setup heap allocator for first placement
 	llpc_allocHeap.first = llpc_allocHeap.base;
 	llpc_allocHeap.first->size =
 		llpc_allocHeap.size - sizeof(LLPC_AllocBlock);
@@ -33,6 +33,29 @@ EFI_STATUS llpc_alloc_heapInit(const UINTN pages)
 	llpc_allocHeap.first->free = llpctrue;
 	llpc_allocHeap.first->next = LLPC_NULL;
 	llpc_allocHeap.first->prev = LLPC_NULL;
+
+	return EFI_SUCCESS;
+}
+
+EFI_STATUS llpc_alloc_heapDestroy(void)
+{
+	if (llpc_allocHeap.base == LLPC_NULL ||
+		llpc_allocHeap.pages == 0)
+		return EFI_SUCCESS;
+
+	const EFI_STATUS status = uefi_call_wrapper(
+		BS->FreePages, 2,
+		(EFI_PHYSICAL_ADDRESS)(UINTN)llpc_allocHeap.base,
+		llpc_allocHeap.pages
+	);
+
+	if (EFI_ERROR(status))
+		return status;
+
+	llpc_allocHeap.base = LLPC_NULL;
+	llpc_allocHeap.size = 0;
+	llpc_allocHeap.pages = 0;
+	llpc_allocHeap.first = LLPC_NULL;
 
 	return EFI_SUCCESS;
 }
