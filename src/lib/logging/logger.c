@@ -20,7 +20,7 @@ void llpc_logecho(CHAR16 *msg)
 		msg);
 }
 
-void llpc_log(const LLPC_LogLevel level, const char *msg)
+void llpc_extlog(const LLPC_LogLevel level, const char *msg, const llpc_bool newline)
 {
 	if (llpc_appData.logLevel == LLPC_LL_None)
 		return;
@@ -55,6 +55,8 @@ void llpc_log(const LLPC_LogLevel level, const char *msg)
 
 	llpc_logecho(timeBuff);
 	llpc_logecho(messageC16);
-	llpc_logecho(L"\r\n");
+
+	if (newline)
+		llpc_logecho(L"\r\n");
 }
 

@@ -15,7 +15,10 @@
 LLPC_LOGGER_OPEN
 
 LLPCAPI void llpc_logecho(CHAR16 *msg);
-LLPCAPI void llpc_log(const LLPC_LogLevel level, const char *msg);
+LLPCAPI void llpc_extlog(const LLPC_LogLevel level, const char *msg, const llpc_bool newline);
+
+#define llpc_log(_lvl, _msg) \
+	llpc_extlog(_lvl, _msg, llpctrue)
 
 LLPC_LOGGER_CLOSE
 
