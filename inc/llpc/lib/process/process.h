@@ -36,12 +36,14 @@ typedef enum LLPC_ProcessError
 	LLPC_PROC_ERR_InitError,
 	LLPC_PROC_ERR_VectorAction,
 	LLPC_PROC_PIDNotFound,
+	LLPC_PROC_InvalidData,
 
 	LLPC_PROC_ERR_NULL,
 } LLPC_ProcessError;
 
 typedef struct LLPC_ProcessSector
 {
+	void *data;
 	char *name;
 
 	LLPC_ProcessError initError;
@@ -55,6 +57,9 @@ typedef struct LLPC_GlobalProcessInfo
 	LLPC_Vector sectorList; // TYPE: LLPC_ProcessSector
 	LLPC_ProcessError lastError;
 
+	LLPC_PID lastPID;
+	LLPC_PID startPID;
+
 	llpc_bool __initialized;
 } LLPC_GlobalProcessInfo;
 
@@ -62,7 +67,9 @@ extern LLPC_GlobalProcessInfo llpc_processData;
 
 LLPC_GlobalProcessInfo llpc_proc_init(void);
 
-LLPC_ProcessSector llpc_proc_initSector(LLPC_GlobalProcessInfo *gpi, void *data);
+LLPC_ProcessSector llpc_proc_initSector(LLPC_GlobalProcessInfo *gpi, const char *name, void *data);
+LLPC_ProcessSector llpc_proc_getSectorByPID(LLPC_GlobalProcessInfo *gpi, const LLPC_PID pid);
+LLPC_ProcessSector llpc_proc_getSectorByName(LLPC_GlobalProcessInfo *gpi, const char *name);
 
 LLPC_ProcessError llpc_proc_destroy(LLPC_GlobalProcessInfo *gpi);
 LLPC_ProcessError llpc_proc_destroySector(LLPC_GlobalProcessInfo *gpi, const LLPC_PID pid);
