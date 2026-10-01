@@ -17,6 +17,10 @@
 
 LLPC_VECTOR_OPEN
 
+#ifndef LLPC_VECTOR_CAP_ADDITION
+# 	define LLPC_VECTOR_CAP_ADDITION 		16
+#endif
+
 typedef struct LLPC_Vector
 {
 	void **vec;
@@ -39,8 +43,10 @@ typedef enum LLPC_VectorError
 
 LLPC_Vector llpc_vector_init(const size_t cap, const llpc_bool dynamic);
 
+LLPC_VectorError llpc_vector_deleteIndex(LLPC_Vector *vec, const size_t index, const llpc_bool fall);
 LLPC_VectorError llpc_vector_replaceIndex(LLPC_Vector *vec, void *item, const size_t idx);
 LLPC_VectorError llpc_vector_pushBack(LLPC_Vector *vec, void *item);
+LLPC_VectorError llpc_vector_pushFront(LLPC_Vector *vec, void *item);
 
 void llpc_vector_destroy(LLPC_Vector *vec);
 
