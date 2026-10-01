@@ -22,10 +22,11 @@ typedef enum llpc_bool
 
 typedef enum LLPC_SystemError
 {
-	LLPC_SE_OK,
+	LLPC_SE_OK = 0,
 
 	LLPC_SE_InitNull,
 	LLPC_SE_HeapInit,
+	LLPC_SE_ProcInit,
 
 	LLPC_SE_UNKNOWN,
 } LLPC_SystemError;
