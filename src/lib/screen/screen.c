@@ -3,9 +3,11 @@
 #include "llpc/lib/io/output.h"
 #include "llpc/lib/types.h"
 
-LLPC_Screen llpc_screen_init(void)
+LLPC_Screen llpc_screen_init(const char *name)
 {
-	LLPC_Screen screen = {0};
+	LLPC_Screen screen = {
+		.name = name
+	};
 
 	screen.curX = 0;
 	screen.curY = 0;

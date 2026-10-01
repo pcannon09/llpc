@@ -17,6 +17,8 @@ LLPC_SCREEN_OPEN
 
 typedef struct LLPC_Screen
 {
+	const char *name;
+
 	unsigned int curX, curY;
 
 	UINT8 screenColor;
@@ -35,7 +37,7 @@ typedef enum LLPC_ScreenStatus
 	LLPC_SSTAT_UpdateFailed,
 } LLPC_ScreenStatus;
 
-LLPC_Screen llpc_screen_init(void);
+LLPC_Screen llpc_screen_init(const char *name);
 
 LLPC_ScreenStatus llpc_screen_update(LLPC_Screen *screen, llpc_bool clear);
 
