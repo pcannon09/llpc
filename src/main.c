@@ -13,7 +13,6 @@
 #include "llpc/lib/fmt/fmtConvert.h"
 
 #include "llpc/lib/screen/screen.h"
-#include "llpc/lib/vector/vector.h"
 
 EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
@@ -24,10 +23,28 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 		.logLevel = LLPC_LL_Verbose
 	};
 
-	if (llpc_initialize(mainApplication, ImageHandle, SystemTable) != LLPC_SE_OK)
-		return EFI_LOAD_ERROR;
+	const LLPC_SystemError initStatus =
+		llpc_initialize(mainApplication, ImageHandle, SystemTable);
 
-	llpc_log(LLPC_LL_Verbose, "Initializing screen...");
+	llpc_extlog(LLPC_LL_Verbose, "", llpcfalse);
+	llpc_io_setColor(LLPC_IO_COLOR_BG_CYAN);
+	llpc_io_echo(L"Initializing Shell: ");
+
+	CHAR16 nameC16[llpc_strlen(llpc_appData.name) + 1];
+	llpc_io_print(llpc_toChar16(nameC16, mainApplication.name));
+	llpc_io_resetColor(LLPC_IOST_ALL);
+
+	if (initStatus != LLPC_SE_OK)
+	{
+		llpc_log(LLPC_LL_Fatal, 	"FATAL :-(   Failed to initialize");
+		llpc_extlog(LLPC_LL_Fatal, 	"Error code: SYSERR-", llpcfalse);
+		Print(L"%u", initStatus); // Get error code
+		llpc_io_print(L"");
+
+		return EFI_LOAD_ERROR;
+	}
+
+	llpc_log(LLPC_LL_Verbose, "Checking heap status...");
 
 	if (llpc_allocHeap.size == 0)
 	{
@@ -35,42 +52,13 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 		return EFI_BAD_BUFFER_SIZE;
 	}
 
+	llpc_log(LLPC_LL_Verbose, "Initializing screen...");
+
 	LLPC_Screen screen = llpc_screen_init();
 	llpc_screen_update(&screen, llpctrue);
 
-	// Shell init
-	llpc_io_setColor(LLPC_IO_COLOR_BG_CYAN);
-	llpc_io_echo(L"Initializing Shell: ");
-
-	CHAR16 nameC16[llpc_strlen(llpc_appData.name) + 1];
-	llpc_io_print(llpc_toChar16(nameC16, mainApplication.name));
-	llpc_screen_update(&screen, llpcfalse);
-
-	LLPC_Vector msgs = llpc_vector_init(2, llpctrue); // char*
-
-	Print(L"CAP: %u\r\n", msgs.cap);
-	Print(L"SIZE: %u\r\n", msgs.size);
-
-	llpc_vector_pushBack(&msgs, "Hello");
-	llpc_vector_pushBack(&msgs, "World");
-	llpc_vector_pushBack(&msgs, "How");
-
-	Print(L"\r\n%a\r\n\r\n", msgs.__initialized ? "true" : "false");
-
-	for (UINT32 i = 0 ; i < msgs.size ; ++i)
-	{
-		Print(L"%u\r\n", msgs.vec[i]);
-	}
-
-	Print(L"==END==\r\n");
-	Print(L"CAP: %u\r\n", msgs.cap);
-	Print(L"SIZE: %u\r\n", msgs.size);
-
-	// CHAR16 buff[99];
-	// llpc_io_extReadline(buff, 99, CHAR_CARRIAGE_RETURN);
-
 	llpc_screen_destroy(&screen);
 
-	return EFI_SUCCESS;
+	return llpc_destroy();
 }
 
