@@ -1,6 +1,5 @@
 #include "llpc/lib/logging/logger.h"
 
-#include "llpc/lib/io/output.h"
 #include "llpc/lib/string/string.h"
 #include "llpc/lib/fmt/fmtConvert.h"
 
@@ -12,8 +11,14 @@
 #define __LLPC_timeBuff_TIME_LOG_EXAMPLE \
 	"[ 00:00:00.0000 - 0000.00.00 ]  "
 
-void llpc_logecho(CHAR16 *msg)
+void llpc_logecho(const LLPC_LogLevel level, CHAR16 *msg)
 {
+	if (llpc_appData.logLevel == LLPC_LL_None)
+		return;
+
+	if (level < llpc_appData.logLevel)
+		return;
+
 	uefi_call_wrapper(
 		LLPC_SystemTable->ConOut->OutputString,
 		2, LLPC_SystemTable->ConOut,
@@ -53,10 +58,10 @@ void llpc_extlog(const LLPC_LogLevel level, const char *msg, const llpc_bool new
 			dateNow.day
 	);
 
-	llpc_logecho(timeBuff);
-	llpc_logecho(messageC16);
+	llpc_logecho(level, timeBuff);
+	llpc_logecho(level, messageC16);
 
 	if (newline)
-		llpc_logecho(L"\r\n");
+		llpc_logecho(level, L"\r\n");
 }
 
