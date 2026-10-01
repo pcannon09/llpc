@@ -4,7 +4,6 @@
 #include <efi/efi.h>
 
 #include "llpc/lib/types.h"
-#include "llpc/lib/process/process.h"
 
 #ifdef __cplusplus
 #	define LLPC_SCREEN_OPEN		extern "C" {
@@ -37,7 +36,6 @@ typedef enum LLPC_ScreenStatus
 } LLPC_ScreenStatus;
 
 LLPC_Screen llpc_screen_init(void);
-LLPC_Screen llpc_screen_sendSignal(const LLPC_ScreenSignals signal);
 
 LLPC_ScreenStatus llpc_screen_update(LLPC_Screen *screen, llpc_bool clear);
 
