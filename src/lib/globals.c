@@ -60,8 +60,8 @@ EFI_STATUS llpc_destroy(void)
 
 		if (code != LLPC_PROC_ERR_OK)
 		{
-			llpc_extlog(LLPC_LL_Error, 	"Failed to destroy *all* processes; Error code: SYSERR-", llpcfalse);
-			Print(L"%u", code); // Get error code
+			llpc_extlog(LLPC_LL_Warning, 	"Failed to destroy *all* processes, some were killed; Error code: SYSERR-", llpcfalse);
+			Print(L"%u\r\n", code); // Get error code
 		}
 	}
 
