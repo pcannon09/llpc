@@ -8,6 +8,7 @@
 #include "llpc/lib/io/output.h"
 
 #include "llpc/lib/logging/logger.h"
+#include "llpc/lib/process/process.h"
 #include "llpc/lib/string/string.h"
 
 #include "llpc/lib/fmt/fmtConvert.h"
@@ -20,7 +21,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 		.name = "Low-Level Portable C",
 		.shortName = "LLPC",
 		.version = LLPC_UEFI_VERSION(0, 1),
-		.logLevel = LLPC_LL_Verbose
+		.logLevel = LLPC_LL_Debug
 	};
 
 	const LLPC_SystemError initStatus =
@@ -54,8 +55,9 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
 	llpc_log(LLPC_LL_Verbose, "Initializing screen...");
 
-	LLPC_Screen screen = llpc_screen_init();
-	llpc_screen_update(&screen, llpctrue);
+	LLPC_Screen screen = llpc_screen_init("main-screen");
+	llpc_proc_initSector(&llpc_processData, screen.name, &screen);
+	llpc_screen_update(&screen, llpcfalse);
 
 	llpc_screen_destroy(&screen);
 
