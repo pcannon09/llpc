@@ -1,6 +1,7 @@
 #ifndef INCLUDE_STRING_STRING_COMMON_H_
 #define INCLUDE_STRING_STRING_COMMON_H_
 
+#include <efi/x86_64/efibind.h>
 #include <stddef.h>
 
 #include "llpc/lib/types.h"
@@ -21,6 +22,7 @@
 LLPC_STRING_COMMON_OPEN
 
 LLPCAPI unsigned int llpc_strlen(const char *message);
+LLPCAPI unsigned int llpc_strlen16(const CHAR16 *message);
 LLPCAPI unsigned int llpc_intstrlen(int n);
 
 LLPCAPI char *llpc_strdup(const char *src);
@@ -46,6 +48,8 @@ LLPCAPI static inline llpc_bool llpc_strPushFront(char **str, const char *add)
 
 LLPCAPI static inline llpc_bool llpc_strPushBack(char **str, const char *add)
 { return llpc_strAddIdx(str, add, llpc_strlen(*str)); }
+
+LLPCAPI unsigned int llpc_split(const char *str, const char delimiter, char ***out);
 
 LLPC_STRING_COMMON_CLOSE
 

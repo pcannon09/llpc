@@ -1,5 +1,109 @@
 #include "llpc/lib/string/string.h"
 #include "llpc/lib/alloc/calloc.h"
+#include "llpc/lib/alloc/free.h"
+
+unsigned int llpc_split(const char *str, const char del, char ***out)
+{
+	if (!str || !out)
+		return 0;
+
+	*out = NULL;
+
+	const unsigned int len = llpc_strlen(str);
+
+	// An empty string is one empty token
+	if (len == 0)
+	{
+		char **parts = llpc_calloc(2, sizeof(char *));
+
+		if (!parts)
+			return 0;
+
+		parts[0] = llpc_calloc(1, sizeof(char));
+
+		if (!parts[0])
+		{
+			llpc_nullify(parts);
+
+			return 0;
+		}
+
+		parts[0][0] = '\0';
+		parts[1] = NULL;
+
+		*out = parts;
+
+		return 1;
+	}
+
+	unsigned int count = 1;
+
+	for (unsigned int i = 0 ; i < len ; ++i)
+	{
+		if (str[i] == del)
+			count++;
+	}
+
+	char **parts =
+		llpc_calloc(count + 1, sizeof(char *));
+
+	if (!parts)
+		return 0;
+
+	unsigned int part = 0;
+	unsigned int start = 0;
+
+	for (unsigned int i = 0 ; i <= len ; ++i)
+	{
+		if (str[i] != del && str[i] != '\0')
+			continue;
+
+		const unsigned int partLen = i - start;
+
+		parts[part] =
+			llpc_calloc(partLen + 1, sizeof(char));
+
+		if (!parts[part])
+		{
+			for (unsigned int j = 0 ; j < part ; ++j)
+				llpc_nullify(parts[j]);
+
+			llpc_nullify(parts);
+
+			return 0;
+		}
+
+		if (partLen > 0)
+			llpc_memcpy(parts[part], str + start, partLen);
+
+		parts[part][partLen] = '\0';
+
+		part++;
+		start = i + 1;
+	}
+
+	parts[count] = NULL;
+
+	*out = parts;
+
+	return count;
+}
+
+unsigned int llpc_strlen16(const CHAR16 *message)
+{
+	if (!message)
+		return 0;
+
+	unsigned int count = 0;
+
+	while (*message)
+	{
+		count++;
+		message++;
+	}
+
+	return count;
+}
 
 unsigned int llpc_strlen(const char *message)
 {
@@ -221,5 +325,4 @@ void llpc_strreverse(char *str, const size_t nlen)
 		str[nlen - 1 - i] = tmpc;
 	}
 }
-
 
