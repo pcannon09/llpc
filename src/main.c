@@ -9,11 +9,13 @@
 
 #include "llpc/lib/logging/logger.h"
 #include "llpc/lib/process/process.h"
+#include "llpc/lib/sound/sound.h"
 #include "llpc/lib/string/string.h"
 
 #include "llpc/lib/fmt/fmtConvert.h"
 
 #include "llpc/lib/screen/screen.h"
+#include "llpc/shell/shell.h"
 
 EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
@@ -37,10 +39,32 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
 	if (initStatus != LLPC_SE_OK)
 	{
-		llpc_log(LLPC_LL_Fatal, 	"FATAL :-(   Failed to initialize");
+		const CHAR16 *fatalBanner =
+			L" ███████╗ █████╗ ████████╗ █████╗ ██╗             ██╗\n"
+			L" ██╔════╝██╔══██╗╚══██╔══╝██╔══██╗██║         ██╗██╔╝\n"
+			L" █████╗  ███████║   ██║   ███████║██║         ╚═╝██║ \n"
+			L" ██╔══╝  ██╔══██║   ██║   ██╔══██║██║         ██╗██║ \n"
+			L" ██║     ██║  ██║   ██║   ██║  ██║███████╗    ╚═╝╚██╗\n"
+			L" ╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚══════╝        ╚═╝\n";
+
+		llpc_io_setColor(LLPC_IO_COLOR_WHITE | LLPC_IO_COLOR_BG_BLUE);
+		llpc_io_action(LLPC_OT_Clear, LLPC_NULL);
+
+		// Print the banner and set pos with color
+		llpc_io_setColor(LLPC_IO_COLOR_WHITE | LLPC_IO_COLOR_BG_RED);
+		llpc_io_action(LLPC_OT_CurGoto, LLPC_NULL, 1, 0);
+		llpc_io_print(L"\n");
+
+		if (LLPC_LOG_LVLCHECK(LLPC_LL_Fatal))
+			Print(L"%s\n", fatalBanner);
+
+		llpc_io_setColor(LLPC_IO_COLOR_WHITE | LLPC_IO_COLOR_BG_BLUE);
+		llpc_io_action(LLPC_OT_CurGoto, LLPC_NULL, 1, 11);
 		llpc_extlog(LLPC_LL_Fatal, 	"Error code: SYSERR-", llpcfalse);
 		Print(L"%u", initStatus); // Get error code
 		llpc_io_print(L"");
+
+		llpc_io_resetColor(LLPC_IOST_ALL);
 
 		return EFI_LOAD_ERROR;
 	}
@@ -56,10 +80,15 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	llpc_log(LLPC_LL_Verbose, "Initializing screen...");
 
 	LLPC_Screen screen = llpc_screen_init("main-screen");
-	llpc_proc_initSector(&llpc_processData, screen.name, &screen);
-	llpc_screen_update(&screen, llpcfalse);
+	llpc_proc_initSector(&llpc_processData, screen.obj.id, &screen,
+			&screen.obj.sector);
+	llpc_screen_update(&screen, LLPC_DEF_CLS);
 
-	llpc_screen_destroy(&screen);
+	LLPC_Shell shell = llpc_shell_init(0, LLPC_NULL);
+
+	llpc_shell_loop(&shell);
+
+	llpc_shell_destroy(&shell);
 
 	return llpc_destroy();
 }
