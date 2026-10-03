@@ -1,26 +1,24 @@
 #include "llpc/lib/alloc/calloc.h"
 #include "llpc/lib/alloc/malloc.h"
 
+#include "llpc/lib/types.h"
+
 VOID *llpc_calloc(UINTN count, UINTN size)
 {
-	UINT8 *ptr;
-	UINTN total;
-	UINTN i;
+	if (count == 0 || size == 0)
+		return LLPC_NULL;
 
-	if (count != 0 && size > (~(UINTN)0) / count)
-		return NULL;
+	if (size > (~(UINTN)0) / count)
+		return LLPC_NULL;
 
-	total = count * size;
+	const UINTN total = count * size;
 
-	if (total == 0)
-		return NULL;
-
-	ptr = llpc_malloc(total);
+	UINT8 *ptr = llpc_malloc(total);
 
 	if (!ptr)
-		return NULL;
+		return LLPC_NULL;
 
-	for (i = 0; i < total; i++)
+	for (UINTN i = 0 ; i < total ; i++)
 		ptr[i] = 0;
 
 	return ptr;

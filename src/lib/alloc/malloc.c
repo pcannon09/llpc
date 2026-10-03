@@ -1,4 +1,5 @@
 #include "llpc/lib/alloc/malloc.h"
+#include "llpc/lib/alloc/free.h"
 #include "llpc/lib/alloc/alloc_impl.h"
 
 VOID *llpc_malloc(UINTN size)
@@ -7,6 +8,11 @@ VOID *llpc_malloc(UINTN size)
 		return LLPC_NULL;
 
 	size = llpc_alignUp(size, LLPC_DEFAULT_ALIGNMENT);
+
+	// Header size must be aligned so (block + 1) and every split header
+	// land on an aligned address
+	const UINTN headerSize =
+		llpc_alignUp(sizeof(LLPC_AllocBlock), LLPC_DEFAULT_ALIGNMENT);
 
 	for (LLPC_AllocBlock *block = llpc_allocHeap.first ;
 			block != LLPC_NULL ;
@@ -17,18 +23,16 @@ VOID *llpc_malloc(UINTN size)
 
 		const UINTN remaining = block->size - size;
 
-		if (remaining >=
-			sizeof(LLPC_AllocBlock) + LLPC_DEFAULT_ALIGNMENT)
+		// Only split if there is room for a new header plus at least one
+		// aligned payload unit. Otherwise leave the slack in this block
+		if (remaining >= headerSize + LLPC_DEFAULT_ALIGNMENT)
 		{
 			LLPC_AllocBlock *split =
 				(LLPC_AllocBlock *)(
 					(UINT8 *)(block + 1) + size);
 
-			split->size =
-				remaining - sizeof(LLPC_AllocBlock);
-
+			split->size = remaining - headerSize;
 			split->free = llpctrue;
-
 			split->next = block->next;
 			split->prev = block;
 
