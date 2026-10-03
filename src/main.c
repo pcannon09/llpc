@@ -3,6 +3,7 @@
 
 #include "llpc/lib/alloc/alloc_impl.h"
 #include "llpc/lib/globals.h"
+#include "llpc/lib/asciiBanners.h"
 
 #include "llpc/lib/io/color.h"
 #include "llpc/lib/io/output.h"
@@ -37,16 +38,8 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	llpc_io_print(llpc_toChar16(nameC16, mainApplication.name));
 	llpc_io_resetColor(LLPC_IOST_ALL);
 
-	if (initStatus != LLPC_SE_OK)
+	if (initStatus == LLPC_SE_OK)
 	{
-		const CHAR16 *fatalBanner =
-			L" ███████╗ █████╗ ████████╗ █████╗ ██╗             ██╗\n"
-			L" ██╔════╝██╔══██╗╚══██╔══╝██╔══██╗██║         ██╗██╔╝\n"
-			L" █████╗  ███████║   ██║   ███████║██║         ╚═╝██║ \n"
-			L" ██╔══╝  ██╔══██║   ██║   ██╔══██║██║         ██╗██║ \n"
-			L" ██║     ██║  ██║   ██║   ██║  ██║███████╗    ╚═╝╚██╗\n"
-			L" ╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚══════╝        ╚═╝\n";
-
 		llpc_io_setColor(LLPC_IO_COLOR_WHITE | LLPC_IO_COLOR_BG_BLUE);
 		llpc_io_action(LLPC_OT_Clear, LLPC_NULL);
 
@@ -56,7 +49,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 		llpc_io_print(L"\n");
 
 		if (LLPC_LOG_LVLCHECK(LLPC_LL_Fatal))
-			Print(L"%s\n", fatalBanner);
+			Print(L"%s\n", llpc_ascii_fatalBanner());
 
 		llpc_io_setColor(LLPC_IO_COLOR_WHITE | LLPC_IO_COLOR_BG_BLUE);
 		llpc_io_action(LLPC_OT_CurGoto, LLPC_NULL, 1, 11);
