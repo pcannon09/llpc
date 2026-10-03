@@ -9,24 +9,28 @@ VOID *llpc_realloc(VOID *ptr, UINTN size)
 	VOID *newPtr;
 	UINTN copySize;
 
-	if (ptr == NULL)
+	if (ptr == LLPC_NULL)
 		return llpc_malloc(size);
 
 	if (size == 0)
 	{
 		llpc_nullify(ptr);
-		return NULL;
+		return LLPC_NULL;
 	}
 
-	block = ((LLPC_AllocBlock*)ptr) - 1;
+	// Align before comparing against the already-aligned `block->size`
+	const UINTN alignedSize =
+		llpc_alignUp(size, LLPC_DEFAULT_ALIGNMENT);
 
-	if (size <= block->size)
+	block = ((LLPC_AllocBlock *)ptr) - 1;
+
+	if (alignedSize <= block->size)
 		return ptr;
 
 	newPtr = llpc_malloc(size);
 
 	if (!newPtr)
-		return NULL;
+		return LLPC_NULL;
 
 	copySize = block->size;
 
