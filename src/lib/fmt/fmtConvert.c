@@ -21,3 +21,21 @@ CHAR16 *llpc_toChar16(CHAR16 *dst, const char *src)
 	return dst;
 }
 
+LLPCAPI char *llpc_toChar(char *dst, const CHAR16 *src)
+{
+	if (!src || !dst)
+		return LLPC_NULL;
+
+	UINTN i = 0;
+
+	while (src[i] != '\0')
+	{
+		dst[i] = (char)src[i];
+		i++;
+	}
+
+	dst[i] = '\0';
+
+	return dst;
+}
+

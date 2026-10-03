@@ -17,6 +17,7 @@
 LLPC_FMTCONVERT_OPEN
 
 LLPCAPI CHAR16 *llpc_toChar16(CHAR16 *dst, const char *src);
+LLPCAPI char *llpc_toChar(char *dst, const CHAR16 *src);
 
 LLPC_FMTCONVERT_CLOSE
 
