@@ -39,17 +39,19 @@ set(NASM_FORMAT elf64)
 
 # Build options
 
-option(LLPC_BUILD_FMT "Build LLPC FMT module" ON)
-option(LLPC_BUILD_IO "Build LLPC IO module" ON)
-option(LLPC_BUILD_LOGGING "Build LLPC Logging module" ON)
-option(LLPC_BUILD_TIME "Build LLPC Time module" ON)
-option(LLPC_BUILD_STRING "Build LLPC String module" ON)
-option(LLPC_BUILD_ALLOC "Build LLPC Allocator module" ON)
-option(LLPC_BUILD_SOUND "Build LLPC Sound module" ON)
-option(LLPC_BUILD_SCREEN "Build LLPC Screen module" ON)
-option(LLPC_BUILD_PROCESS "Build LLPC Process module" ON)
-option(LLPC_BUILD_VECTOR "Build LLPC Vector application" ON)
-option(LLPC_BUILD_UEFI "Build LLPC UEFI application" ON)
+option(LLPC_BUILD_FMT 		"Build LLPC FMT module" ON)
+option(LLPC_BUILD_IO 		"Build LLPC IO module" ON)
+option(LLPC_BUILD_LOGGING 	"Build LLPC Logging module" ON)
+option(LLPC_BUILD_TIME 		"Build LLPC Time module" ON)
+option(LLPC_BUILD_STRING 	"Build LLPC String module" ON)
+option(LLPC_BUILD_ALLOC 	"Build LLPC Allocator module" ON)
+option(LLPC_BUILD_SOUND 	"Build LLPC Sound module" ON)
+option(LLPC_BUILD_SCREEN 	"Build LLPC Screen module" ON)
+option(LLPC_BUILD_PROCESS 	"Build LLPC Process module" ON)
+option(LLPC_BUILD_VECTOR 	"Build LLPC Vector module" ON)
+option(LLPC_BUILD_SHELL 	"Build LLPC Shell module" ON)
+option(LLPC_BUILD_SHAPP 	"Build LLPC Shell Applications module" ON)
+option(LLPC_BUILD_UEFI 		"Build LLPC UEFI application" ON)
 
 option(LLPC_BUILD_TEST "Build LLPC host test executable" OFF)
 option(LLPC_ENABLE_SANITIZER "Enable sanitizers for host builds" OFF)
@@ -122,8 +124,15 @@ set(LLPC_SOUND_SOURCES
 		${SRC_DIR}/lib/sound/sound.c
 )
 
+set(LLPC_SHELL_SOURCES
+		${SRC_DIR}/shell/shell.c
+)
+
+file(GLOB LLPC_SHAPP_SOURCES "${SRC_DIR}/shell/apps/*.c")
+
 set(LLPC_ALLOC_SOURCES
 		${SRC_DIR}/lib/alloc/alloc_impl.c
+		${SRC_DIR}/lib/alloc/alloc.c
 		${SRC_DIR}/lib/alloc/calloc.c
 		${SRC_DIR}/lib/alloc/free.c
 		${SRC_DIR}/lib/alloc/malloc.c
@@ -209,6 +218,24 @@ add_library(${projectName} STATIC
 )
 
 llpc_configure_library(${projectName})
+
+# Shell apps library
+if(LLPC_BUILD_SHAPP)
+	add_library(${projectName}_shapp STATIC
+		${LLPC_SHAPP_SOURCES}
+	)
+
+	llpc_configure_library(${projectName}_shapp)
+endif()
+
+#  library
+if(LLPC_BUILD_SHELL)
+	add_library(${projectName}_shell STATIC
+		${LLPC_SHELL_SOURCES}
+	)
+
+	llpc_configure_library(${projectName}_shell)
+endif()
 
 # Process library
 if(LLPC_BUILD_PROCESS)
@@ -499,6 +526,18 @@ if(LLPC_BUILD_UEFI)
 	if(LLPC_BUILD_ALLOC)
 		list(APPEND LLPC_UEFI_SOURCES
 			${LLPC_ALLOC_SOURCES}
+		)
+	endif()
+
+	if(LLPC_BUILD_SHAPP)
+		list(APPEND LLPC_UEFI_SOURCES
+			${LLPC_SHAPP_SOURCES}
+		)
+	endif()
+
+	if(LLPC_BUILD_SHELL)
+		list(APPEND LLPC_UEFI_SOURCES
+			${LLPC_SHELL_SOURCES}
 		)
 	endif()
 
