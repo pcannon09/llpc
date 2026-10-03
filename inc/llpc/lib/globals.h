@@ -5,6 +5,7 @@
 #include <efi/efilib.h>
 
 #include "llpc/lib/types.h"
+#include "llpc/lib/logging/logger.h"
 
 #ifdef __cplusplus
 #	define LLPC_GLOBALS_OPEN			extern "C" {
@@ -22,23 +23,11 @@ LLPC_GLOBALS_OPEN
 #define LLPC_DEFAULT_NUM_PAGES 		16
 
 #define LLPC_DECL_PAIR(PairName, _first, _second)   \
-	typedef struct LLPC_##PairName                 	\
-	{                                              	\
-		_first first;                              	\
+	typedef struct LLPC_##PairName				 	\
+	{											  	\
+		_first first;							  	\
 		_second second; 						   	\
-	} LLPC_##PairName                              	\
-
-typedef enum LLPC_LogLevel
-{
-	LLPC_LL_None = 0,
-
-	LLPC_LL_Debug 	= 10,
-	LLPC_LL_Verbose = 20,
-	LLPC_LL_Log 	= 30,
-	LLPC_LL_Warning = 40,
-	LLPC_LL_Error 	= 50,
-	LLPC_LL_Fatal 	= 60,
-} LLPC_LogLevel;
+	} LLPC_##PairName							  	\
 
 typedef struct LLPC_AppData
 {
