@@ -1,3 +1,5 @@
+#include "llpc/lib/globals.h"
+
 #include "llpc/lib/logging/logger.h"
 
 #include "llpc/lib/string/string.h"
