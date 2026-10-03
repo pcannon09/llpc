@@ -62,28 +62,28 @@ EFI_STATUS llpc_alloc_heapDestroy(void)
 
 void llpc_heapMerge(LLPC_AllocBlock *block)
 {
-	// Merge next block to main
+	// Merge with next free neighbour; `block` survives
 	if (block->next && block->next->free)
 	{
 		LLPC_AllocBlock *next = block->next;
 
 		block->size += sizeof(LLPC_AllocBlock) + next->size;
-		block->next = next->next;
+		block->next  = next->next;
 
 		if (block->next)
 			block->next->prev = block;
 	}
 
-	// Merge previous block to main
+	// Merge with previous free neighbour; `prev` survives, `block` is gone
 	if (block->prev && block->prev->free)
 	{
 		LLPC_AllocBlock *prev = block->prev;
 
-		block->size += sizeof(LLPC_AllocBlock) + block->size;
-		block->next = prev->next;
+		prev->size += sizeof(LLPC_AllocBlock) + block->size;
+		prev->next  = block->next;
 
-		if (block->next)
-			prev->next->prev = block;
+		if (prev->next)
+			prev->next->prev = prev;
 	}
 }
 
