@@ -31,7 +31,7 @@ typedef enum LLPC_SystemError
 	LLPC_SE_UNKNOWN,
 } LLPC_SystemError;
 
-#if __LLPC_HAS_C23
+#if __LLPC_HAS_C23 && LLPC_USE_NULLPTR
 # 	define LLPC_NULL nullptr
 #else
 # 	define LLPC_NULL ((void*)0)
