@@ -78,6 +78,8 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	llpc_screen_update(&screen, LLPC_DEF_CLS);
 
 	LLPC_Shell shell = llpc_shell_init(0, LLPC_NULL);
+	llpc_proc_initSector(&llpc_processData, shell.obj.id, &shell,
+			&shell.obj.sector);
 
 	llpc_shell_loop(&shell);
 
