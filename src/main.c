@@ -38,7 +38,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	llpc_io_print(llpc_toChar16(nameC16, mainApplication.name));
 	llpc_io_resetColor(LLPC_IOST_ALL);
 
-	if (initStatus == LLPC_SE_OK)
+	if (initStatus != LLPC_SE_OK)
 	{
 		llpc_io_setColor(LLPC_IO_COLOR_WHITE | LLPC_IO_COLOR_BG_BLUE);
 		llpc_io_action(LLPC_OT_Clear, LLPC_NULL);
