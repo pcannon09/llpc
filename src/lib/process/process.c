@@ -1,8 +1,11 @@
+#include "llpc/lib/globals.h"
+
 #include "llpc/lib/process/process.h"
+
+#include "llpc/lib/alloc/calloc.h"
+
 #include "llpc/lib/string/string.h"
-#include "llpc/lib/types.h"
 #include "llpc/lib/logging/logger.h"
-#include "llpc/predefines.h"
 
 LLPC_GlobalProcessInfo llpc_processData = { 0 }; // Also as `GPI` / `Global Process Info`
 
@@ -31,11 +34,6 @@ LLPC_ProcessError llpc_proc_destroy(LLPC_GlobalProcessInfo *gpi)
 	{
 		const LLPC_ProcessSector *sector = gpi->sectorList.vec[i];
 		const LLPC_ProcessError tmpPerr = llpc_proc_destroySector(gpi, sector->pid);
-
-		llpc_extlog(LLPC_LL_Debug, "Destroyed PID: ", llpcfalse);
-
-		if (LLPC_LOG_LVLCHECK(LLPC_LL_Debug))
-			Print(L"%u\r\n", sector->pid);
 
 		if (tmpPerr != LLPC_PROC_ERR_OK)
 			perr = tmpPerr;
@@ -66,7 +64,7 @@ LLPC_ProcessSector llpc_proc_getSectorByName(LLPC_GlobalProcessInfo *gpi, const 
 	{
 		const LLPC_ProcessSector *sector = gpi->sectorList.vec[i];
 
-		if (llpc_strcmp(sector->name, name))
+		if (llpc_strcmp(sector->id, name))
 			return *sector;
 	}
 
@@ -76,33 +74,44 @@ LLPC_ProcessSector llpc_proc_getSectorByName(LLPC_GlobalProcessInfo *gpi, const 
 	return procSec;
 }
 
-LLPC_ProcessSector llpc_proc_initSector(LLPC_GlobalProcessInfo *gpi, const char *name, void *data)
+LLPC_ProcessSector llpc_proc_initSector(LLPC_GlobalProcessInfo *gpi, const char *name, void *data,
+		const LLPC_ProcessSector *sector)
 {
-	LLPC_ProcessSector procSec = {0};
+	LLPC_ProcessSector *procSec = llpc_calloc(1, sizeof(*procSec));
+
+	if (!procSec)
+		return (LLPC_ProcessSector){ .initError = LLPC_PROC_ERR_NULL };
 
 	if (!gpi || !gpi->__initialized)
 	{
-		procSec.initError = LLPC_PROC_ERR_NULL;
-		return procSec;
+		procSec->initError = LLPC_PROC_ERR_NULL;
+		return *procSec;
 	}
 
-	procSec.data = data;
-	procSec.name = llpc_strdup(name);
-	procSec.pid = gpi->lastPID++;
+	procSec->data = data;
+	procSec->id = llpc_strdup(name);
+	procSec->pid = gpi->lastPID++;
+	sector = procSec;
 
-	llpc_extlog(LLPC_LL_Debug, "PID: ", llpcfalse);
-	if (LLPC_LOG_LVLCHECK(LLPC_LL_Debug))
-		Print(L"%u\r\n", procSec.pid);
-
-	if (llpc_vector_pushBack(&gpi->sectorList, &procSec))
+	if (!sector)
 	{
-		procSec.initError = LLPC_PROC_ERR_VectorAction;
-		return procSec;
+		procSec->initError = LLPC_PROC_ERR_NULL;
+		return *procSec;
 	}
 
-	procSec.initError = LLPC_PROC_ERR_OK;
+	llpc_extlog(LLPC_LL_Debug, "Create PID: ", llpcfalse);
+	if (LLPC_LOG_LVLCHECK(LLPC_LL_Debug))
+		Print(L"%u\r\n", procSec->pid);
 
-	return procSec;
+	if (llpc_vector_pushBack(&gpi->sectorList, procSec) != LLPC_VEC_OK)
+	{
+		procSec->initError = LLPC_PROC_ERR_VectorAction;
+		return *procSec;
+	}
+
+	procSec->initError = LLPC_PROC_ERR_OK;
+
+	return *procSec;
 }
 
 LLPC_ProcessError llpc_proc_destroySector(LLPC_GlobalProcessInfo *gpi, const LLPC_PID pid)
@@ -120,9 +129,15 @@ LLPC_ProcessError llpc_proc_destroySector(LLPC_GlobalProcessInfo *gpi, const LLP
 		if (!sector)
 			return LLPC_PROC_InvalidData;
 
+		// If found, do the actions...
 		if (sector->pid == pid)
 		{
-			sector->sig = LLPC_PSIG_KILL;
+			llpc_extlog(LLPC_LL_Debug, "Destroyed PID: ", llpcfalse);
+			if (LLPC_LOG_LVLCHECK(LLPC_LL_Debug))
+				Print(L"%u\r\n", sector->pid);
+
+			sector->sig = LLPC_PSIG_CLEAN;
+
 			found = llpctrue;
 
 			return status;
