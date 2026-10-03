@@ -15,7 +15,9 @@
 
 LLPC_SH_SHELL_OPEN
 
-#define LLPC_SHELL_MAX_PARAMS 	UINT8_MAX
+#define LLPC_SHELL_MAX_PARAMS 		UINT8_MAX
+#define LLPC_APP_PARAMS 			unsigned int argc, char **argv
+#define LLPC_APP_DECL(_name) 		LLPC_ShellErrorCode _name(LLPC_APP_PARAMS)
 
 typedef uint8_t 	LLPC_ShellRetCode;
 
@@ -39,12 +41,25 @@ typedef struct LLPC_ShellInfo
 	LLPC_ShellRetCode code;
 } LLPC_ShellInfo;
 
+typedef struct LLPC_ShellCmdInfo
+{
+	char *command;
+
+	// Function call
+	LLPC_ShellErrorCode (*call)(unsigned int argc, char **argv);
+
+	llpc_bool __end;
+} LLPC_ShellCmdInfo;
+
 typedef struct LLPC_Shell
 {
 	LLPC_ShellErrorCode initError;
 
-	LLPC_ProcessSector obj;
+	LLPC_SignalSupportStatus obj;
 	LLPC_ShellInfo info;
+
+	unsigned int commandsArrSize;
+	LLPC_ShellCmdInfo *commands;
 
 	llpc_bool __initialized;
 } LLPC_Shell;
