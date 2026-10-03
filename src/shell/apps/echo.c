@@ -5,7 +5,7 @@
 
 LLPC_APP_DECL(llpc_app_echo)
 {
-	for (unsigned int i = 0 ; i < argc ; ++i)
+	for (unsigned int i = 1 ; i < argc ; ++i)
 	{
 		const char *p = argv[i];
 
