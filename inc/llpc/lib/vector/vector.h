@@ -3,8 +3,6 @@
 
 #include <stddef.h>
 
-#include <efi/x86_64/efibind.h>
-
 #include "llpc/lib/types.h"
 
 #ifdef __cplusplus
