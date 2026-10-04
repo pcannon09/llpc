@@ -63,7 +63,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	set(LLPC_HOST_PLATFORM LINUX)
 else()
-	set(LLPC_HOST_PLATFORM "${UNKNOWN}-${CMAKE_SYSTEM_NAME}")
+	set(LLPC_HOST_PLATFORM "UNKNOWN-${CMAKE_SYSTEM_NAME}")
 endif()
 
 # Project paths
@@ -101,6 +101,7 @@ set(LLPC_IO_SOURCES
 
 set(LLPC_STRING_SOURCES
 		${SRC_DIR}/lib/string/string.c
+		${SRC_DIR}/lib/string/parser.c
 )
 
 set(LLPC_FMT_SOURCES
