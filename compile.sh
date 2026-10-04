@@ -158,7 +158,7 @@ __compileSoftware() {
 		exit 1
 	fi
 
-	./utils/exec/qemuBuild.sh
+	# ./utils/exec/qemuBuild.sh
 }
 
 # CMAKE MACROS
