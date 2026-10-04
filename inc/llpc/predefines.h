@@ -60,6 +60,8 @@ LLPC_PREDEFINES_OPEN
 # 	define __LLPC_HAS_C23	0
 #endif
 
+#define LLPC_NPOS 		UINT_MAX
+
 #define LLPC_ARRSIZE(_arr) 		sizeof(_arr) / sizeof(_arr[0])
 
 #define LLPCAPI			__attribute__((visibility("default")))
