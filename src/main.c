@@ -10,7 +10,6 @@
 
 #include "llpc/lib/logging/logger.h"
 #include "llpc/lib/process/process.h"
-#include "llpc/lib/sound/sound.h"
 #include "llpc/lib/string/string.h"
 
 #include "llpc/lib/fmt/fmtConvert.h"
@@ -73,12 +72,12 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 	llpc_log(LLPC_LL_Verbose, "Initializing screen...");
 
 	LLPC_Screen screen = llpc_screen_init("main-screen");
-	llpc_proc_initSector(&llpc_processData, screen.obj.id, &screen,
+	llpc_proc_initSector(&llpc_processData, screen.obj.id,
 			&screen.obj.sector);
 	llpc_screen_update(&screen, LLPC_DEF_CLS);
 
 	LLPC_Shell shell = llpc_shell_init(0, LLPC_NULL);
-	llpc_proc_initSector(&llpc_processData, shell.obj.id, &shell,
+	llpc_proc_initSector(&llpc_processData, shell.obj.id,
 			&shell.obj.sector);
 
 	llpc_shell_loop(&shell);
