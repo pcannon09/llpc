@@ -83,7 +83,7 @@ extern LLPC_GlobalProcessInfo llpc_processData;
 
 LLPC_GlobalProcessInfo llpc_proc_init(void);
 
-LLPC_ProcessSector llpc_proc_initSector(LLPC_GlobalProcessInfo *gpi, const char *name, void *data,
+LLPC_ProcessSector llpc_proc_initSector(LLPC_GlobalProcessInfo *gpi, const char *name,
 		const LLPC_ProcessSector *sector);
 LLPC_ProcessSector llpc_proc_getSectorByPID(LLPC_GlobalProcessInfo *gpi, const LLPC_PID pid);
 LLPC_ProcessSector llpc_proc_getSectorByName(LLPC_GlobalProcessInfo *gpi, const char *name);

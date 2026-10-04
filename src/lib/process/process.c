@@ -1,11 +1,8 @@
 #include "llpc/lib/globals.h"
 
 #include "llpc/lib/process/process.h"
-
 #include "llpc/lib/alloc/calloc.h"
-
 #include "llpc/lib/string/string.h"
-#include "llpc/lib/logging/logger.h"
 
 LLPC_GlobalProcessInfo llpc_processData = { 0 }; // Also as `GPI` / `Global Process Info`
 
@@ -74,7 +71,7 @@ LLPC_ProcessSector llpc_proc_getSectorByName(LLPC_GlobalProcessInfo *gpi, const 
 	return procSec;
 }
 
-LLPC_ProcessSector llpc_proc_initSector(LLPC_GlobalProcessInfo *gpi, const char *name, void *data,
+LLPC_ProcessSector llpc_proc_initSector(LLPC_GlobalProcessInfo *gpi, const char *name,
 		const LLPC_ProcessSector *sector)
 {
 	LLPC_ProcessSector *procSec = llpc_calloc(1, sizeof(*procSec));
@@ -88,7 +85,6 @@ LLPC_ProcessSector llpc_proc_initSector(LLPC_GlobalProcessInfo *gpi, const char 
 		return *procSec;
 	}
 
-	procSec->data = data;
 	procSec->id = llpc_strdup(name);
 	procSec->pid = gpi->lastPID++;
 	sector = procSec;
@@ -137,6 +133,31 @@ LLPC_ProcessError llpc_proc_destroySector(LLPC_GlobalProcessInfo *gpi, const LLP
 				Print(L"%u\r\n", sector->pid);
 
 			sector->sig = LLPC_PSIG_CLEAN;
+
+			// Find index of the PID to delete
+			for (size_t findPID = 0 ; findPID < gpi->sectorList.size ; ++findPID)
+			{
+				const LLPC_ProcessSector *procsecIt = gpi->sectorList.vec[findPID];
+
+				if (!procsecIt)
+					continue;
+
+				if (procsecIt->pid == pid)
+				{
+					const LLPC_VectorError code =
+						llpc_vector_deleteIndex(&gpi->sectorList, findPID - 1, llpctrue);
+
+					if (code != LLPC_VEC_OK)
+					{
+						llpc_extlog(LLPC_LL_Error, "Could not delete index ", llpcfalse);
+
+						if (LLPC_LOG_LVLCHECK(LLPC_LL_Error))
+							Print(L"`%u`; Staged for deletion at program ending\r\n", pid);
+
+						continue;
+					}
+				}
+			}
 
 			found = llpctrue;
 
