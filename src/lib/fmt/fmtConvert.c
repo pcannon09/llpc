@@ -21,7 +21,7 @@ CHAR16 *llpc_toChar16(CHAR16 *dst, const char *src)
 	return dst;
 }
 
-LLPCAPI char *llpc_toChar(char *dst, const CHAR16 *src)
+char *llpc_toChar(char *dst, const CHAR16 *src)
 {
 	if (!src || !dst)
 		return LLPC_NULL;
