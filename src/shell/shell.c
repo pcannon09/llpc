@@ -1,9 +1,12 @@
+#include "llpc/predefines.h"
+
 #include "llpc/lib/alloc/calloc.h"
 #include "llpc/lib/alloc/free.h"
 
 #include "llpc/lib/fmt/fmtConvert.h"
 #include "llpc/lib/io/input.h"
 #include "llpc/lib/io/output.h"
+#include "llpc/lib/logging/logger.h"
 #include "llpc/lib/string/string.h"
 
 #include <efi/efidef.h>
@@ -88,6 +91,8 @@ LLPC_ShellInfo llpc_shell_loop(LLPC_Shell *shell)
 		return shinfo;
 	}
 
+	llpc_bool breakoutLoop = llpcfalse;
+
 	CHAR16 *commandBuff = llpc_calloc(8, sizeof(CHAR16));
 
 	if (!commandBuff)
@@ -135,6 +140,15 @@ LLPC_ShellInfo llpc_shell_loop(LLPC_Shell *shell)
 
 		for (size_t i = 0; i < shell->commandsArrSize; ++i)
 		{
+#if LLPC_DEV
+				if (llpc_strcmp(commandArr[0], "dev-force-exit") ||
+						llpc_strcmp(commandArr[0], "dfe"))
+				{
+					breakoutLoop = llpctrue;
+					break;
+				}
+#endif
+
 			const LLPC_ShellCmdInfo cmd = shell->commands[i];
 
 			if (cmd.__end)
@@ -142,7 +156,18 @@ LLPC_ShellInfo llpc_shell_loop(LLPC_Shell *shell)
 
 			if (llpc_strcmp(commandArr[0], cmd.command))
 			{
-				cmd.call(splitted, commandArr);
+				if (cmd.call)
+					cmd.call(splitted, commandArr);
+
+				else
+				{
+					llpc_extlog(LLPC_LL_Error, "No such command call to: ", llpcfalse);
+
+					CHAR16 cmdC16[llpc_strlen(cmd.command) + 1];
+
+					llpc_toChar16(cmdC16, cmd.command);
+					llpc_logecho(LLPC_LL_Error, cmdC16);
+				}
 
 				break;
 			}
@@ -150,6 +175,9 @@ LLPC_ShellInfo llpc_shell_loop(LLPC_Shell *shell)
 
 		llpc_nullify(commandArr);
 		llpc_nullify(command);
+
+		if (breakoutLoop)
+			break;
 	}
 
 	return shinfo;

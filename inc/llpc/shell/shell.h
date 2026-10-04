@@ -2,7 +2,10 @@
 #define INCLUDE_SHELL_SHELL_H_
 
 #include "llpc/lib/process/process.h"
+
+#include <efi/efi.h>
 #include <efi/efidef.h>
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -15,9 +18,10 @@
 
 LLPC_SH_SHELL_OPEN
 
-#define LLPC_SHELL_MAX_PARAMS 		UINT8_MAX
-#define LLPC_APP_PARAMS 			unsigned int argc, char **argv
-#define LLPC_APP_DECL(_name) 		LLPC_ShellErrorCode _name(LLPC_APP_PARAMS)
+#define LLPC_SHELL_MAX_PARAMS 					UINT8_MAX
+#define LLPC_APP_PARAMS 						unsigned int argc, char **argv
+
+#define LLPC_APP_DECL(_name, ...) 				LLPC_ShellErrorCode _name(LLPC_APP_PARAMS, ##__VA_ARGS__, ...)
 
 typedef uint8_t 	LLPC_ShellRetCode;
 
@@ -27,6 +31,7 @@ typedef enum LLPC_ShellErrorCode
 	LLPC_SHEC_ERROR 		= 1,
 	LLPC_SHEC_SystemError 	= 2,
 	LLPC_SHEC_EFI_Error,
+	LLPC_SHEC_ProcError,
 
 	__LLPC_SHEC_MAX 		= 255,
 } LLPC_ShellErrorCode;
@@ -46,7 +51,7 @@ typedef struct LLPC_ShellCmdInfo
 	char *command;
 
 	// Function call
-	LLPC_ShellErrorCode (*call)(unsigned int argc, char **argv);
+	LLPC_ShellErrorCode (*call)(unsigned int argc, char **argv, ...);
 
 	llpc_bool __end;
 } LLPC_ShellCmdInfo;
