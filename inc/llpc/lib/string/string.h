@@ -24,7 +24,9 @@ LLPC_STRING_COMMON_OPEN
 LLPCAPI unsigned int llpc_strlen(const char *message);
 LLPCAPI unsigned int llpc_strlen16(const CHAR16 *message);
 LLPCAPI unsigned int llpc_intstrlen(int n);
+LLPCAPI unsigned int llpc_findstr(const char *str, const char ch, const unsigned int pos);
 
+LLPCAPI char *llpc_strcat(char *dest, const char *src);
 LLPCAPI char *llpc_strdup(const char *src);
 
 LLPCAPI void *llpc_memcpy(void *dest, const void *src, size_t len);

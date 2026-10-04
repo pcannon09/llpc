@@ -1,6 +1,36 @@
+#include <limits.h>
+
 #include "llpc/lib/string/string.h"
 #include "llpc/lib/alloc/calloc.h"
 #include "llpc/lib/alloc/free.h"
+
+char *llpc_strcat(char *dest, const char *src)
+{
+	size_t i, j;
+
+	for (i = 0 ; dest[i] != '\0' ; i++)
+		;
+
+	for (j = 0 ; src[j] != '\0' ; j++)
+		dest[i + j] = src[j];
+
+	dest[i + j] = '\0';
+
+	return dest;
+}
+
+unsigned int llpc_findstr(const char *str, const char ch, const unsigned int pos)
+{
+	const size_t strLen = llpc_strlen(str);
+
+	for (unsigned int i = pos ; i < strLen ; ++i)
+	{
+		if (ch == str[i])
+			return i;
+	}
+
+	return LLPC_NPOS;
+}
 
 unsigned int llpc_split(const char *str, const char del, char ***out)
 {
