@@ -14,6 +14,7 @@
 LLPC_SH_ECHO_OPEN
 
 LLPC_APP_DECL(llpc_app_echo);
+LLPC_APP_DECL(llpc_app_echo_impl, const LLPC_PID pid);
 
 LLPC_SH_ECHO_CLOSE
 
