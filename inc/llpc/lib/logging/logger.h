@@ -22,6 +22,8 @@ typedef enum LLPC_LogLevel
 {
 	LLPC_LL_None = 0,
 
+	LLPC_LL_Extra	= 5,
+
 	LLPC_LL_Debug 	= 10,
 	LLPC_LL_Verbose = 20,
 	LLPC_LL_Log 	= 30,
