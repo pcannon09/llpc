@@ -2,7 +2,6 @@
 
 #include "llpc/lib/alloc/alloc.h"
 #include "llpc/lib/alloc/realloc.h"
-#include "llpc/lib/alloc/alloc_impl.h"
 
 #include "llpc/lib/io/output.h"
 #include "llpc/lib/io/input.h"
@@ -40,7 +39,7 @@ EFI_STATUS llpc_io_extReadline(CHAR16 **buff, const int cap, const CHAR16 del, c
 		return EFI_INVALID_PARAMETER;
 
 	// `autoGrow` contract: caller must pre-allocate at least 8 CHAR16s.
-	int len	   = 0;
+	int len = 0;
 	int curCap = autoGrow
 		? 8
 		: cap;
