@@ -6,6 +6,8 @@
 
 LLPC_GlobalProcessInfo llpc_processData = { 0 }; // Also as `GPI` / `Global Process Info`
 
+#define LLPC_PROC_DEFAULT_LOGLEVEL 		LLPC_LL_Extra
+
 LLPC_GlobalProcessInfo llpc_proc_init(void)
 {
 	LLPC_GlobalProcessInfo gpi = {
@@ -95,8 +97,8 @@ LLPC_ProcessSector llpc_proc_initSector(LLPC_GlobalProcessInfo *gpi, const char 
 		return *procSec;
 	}
 
-	llpc_extlog(LLPC_LL_Debug, "Create PID: ", llpcfalse);
-	if (LLPC_LOG_LVLCHECK(LLPC_LL_Debug))
+	llpc_extlog(LLPC_PROC_DEFAULT_LOGLEVEL, "Create PID: ", llpcfalse);
+	if (LLPC_LOG_LVLCHECK(LLPC_PROC_DEFAULT_LOGLEVEL))
 		Print(L"%u\r\n", procSec->pid);
 
 	if (llpc_vector_pushBack(&gpi->sectorList, procSec) != LLPC_VEC_OK)
@@ -128,8 +130,8 @@ LLPC_ProcessError llpc_proc_destroySector(LLPC_GlobalProcessInfo *gpi, const LLP
 		// If found, do the actions...
 		if (sector->pid == pid)
 		{
-			llpc_extlog(LLPC_LL_Debug, "Destroyed PID: ", llpcfalse);
-			if (LLPC_LOG_LVLCHECK(LLPC_LL_Debug))
+			llpc_extlog(LLPC_PROC_DEFAULT_LOGLEVEL, "Destroyed PID: ", llpcfalse);
+			if (LLPC_LOG_LVLCHECK(LLPC_PROC_DEFAULT_LOGLEVEL))
 				Print(L"%u\r\n", sector->pid);
 
 			sector->sig = LLPC_PSIG_CLEAN;
