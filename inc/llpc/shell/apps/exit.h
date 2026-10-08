@@ -1,6 +1,8 @@
 #ifndef INCLUDE_APPS_EXIT_H_
 #define INCLUDE_APPS_EXIT_H_
 
+#include "llpc/shell/shell.h"
+
 #ifdef __cplusplus
 #	define LLPC_SH_EXIT_OPEN			extern "C" {
 #	define LLPC_SH_EXIT_CLOSE			}
@@ -10,6 +12,10 @@
 #endif
 
 LLPC_SH_EXIT_OPEN
+
+LLPC_APP_DECL(llpc_app_exit);
+LLPC_APP_DECL(llpc_app_exit_impl, const LLPC_PID pid);
+
 LLPC_SH_EXIT_CLOSE
 
 #endif  // INCLUDE_APPS_EXIT_H_
