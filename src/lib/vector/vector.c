@@ -79,7 +79,7 @@ LLPC_VectorError llpc_vector_pushFront(LLPC_Vector *vec, void *item)
 			return error;
 	}
 
-	for (size_t i = vec->size; i > 0; --i)
+	for (size_t i = vec->size ; i > 0 ; --i)
 		vec->vec[i] = vec->vec[i - 1];
 
 	vec->vec[0] = item;
