@@ -5,7 +5,6 @@
 
 #include "llpc/lib/fmt/fmtConvert.h"
 #include "llpc/lib/io/input.h"
-#include "llpc/lib/io/output.h"
 #include "llpc/lib/logging/logger.h"
 #include "llpc/lib/string/string.h"
 
@@ -22,6 +21,8 @@
 #include "llpc/shell/apps/sleep.h"
 #include "llpc/shell/apps/sound.h"
 #include "llpc/shell/apps/time.h"
+#include "llpc/shell/apps/llpc.h"
+#include "llpc/shell/modules/argpar.h"
 
 LLPC_Shell llpc_shell_init(unsigned int argc, char **argv)
 {
@@ -31,13 +32,60 @@ LLPC_Shell llpc_shell_init(unsigned int argc, char **argv)
 	shell.info.argv = argv;
 	shell.info.code = 0;
 
-	shell.commandsArrSize = 16;
+	shell.gap = llpc_argpar_init(
+			"LLPC Shell Commands",
+			"Essential commands for LLPC Shell");
 
-	shell.commands = llpc_calloc(shell.commandsArrSize + 1, sizeof(LLPC_ShellCmdInfo));
+	shell.commandsArrSize = 16;
+	shell.commands = llpc_calloc(
+			shell.commandsArrSize + 1,
+			sizeof(LLPC_ShellCmdInfo));
+
+	if (!shell.commands)
+	{
+		shell.initError = LLPC_SHEC_AllocError;
+		return shell;
+	}
 
 	LLPC_ShellCmdInfo cmd_echo = {0};
 	cmd_echo.command = "echo";
 	cmd_echo.call = llpc_app_echo;
+
+	LLPC_ArgPar *echoHelp = llpc_calloc(1, sizeof(*echoHelp));
+	LLPC_ArgPar *helpParam = llpc_calloc(1, sizeof(*helpParam));
+	LLPC_ArgPar *newlineParam = llpc_calloc(1, sizeof(*newlineParam));
+
+	if (!echoHelp || !helpParam || !newlineParam)
+	{
+		LLPC_FREE(echoHelp);
+		LLPC_FREE(helpParam);
+		LLPC_FREE(newlineParam);
+
+		shell.initError = LLPC_SHEC_AllocError;
+		return shell;
+	}
+
+	*echoHelp = llpc_argpar_sectorInit(
+			&shell.gap,
+			"echo",
+			"Display a line of text as-is",
+			llpcfalse, llpctrue);
+
+	*helpParam = llpc_argpar_sectorInit(
+			&shell.gap,
+			"help",
+			"Get this help",
+			llpctrue, llpctrue);
+
+	*newlineParam = llpc_argpar_sectorInit(
+			&shell.gap,
+			"newline",
+			"Print new-line by default at the end of echoed message",
+			llpctrue, llpctrue);
+
+	llpc_vector_pushBack(&echoHelp->subparams, helpParam);
+	llpc_vector_pushBack(&echoHelp->subparams, newlineParam);
+	llpc_vector_pushBack(&shell.gap.args, echoHelp);
 
 	LLPC_ShellCmdInfo cmd_exit = {0};
 	cmd_exit.command = "exit";
@@ -57,6 +105,10 @@ LLPC_Shell llpc_shell_init(unsigned int argc, char **argv)
 	LLPC_ShellCmdInfo cmd_time = {0};
 	cmd_time.command = "time";
 
+	LLPC_ShellCmdInfo cmd_llpc = {0};
+	cmd_llpc.command = "llpc";
+	cmd_llpc.call = llpc_app_llpc;
+
 	shell.commands[0] = cmd_echo;
 	shell.commands[1] = cmd_exit;
 	shell.commands[2] = cmd_proc;
@@ -64,9 +116,17 @@ LLPC_Shell llpc_shell_init(unsigned int argc, char **argv)
 	shell.commands[4] = cmd_sleep;
 	shell.commands[5] = cmd_sound;
 	shell.commands[6] = cmd_time;
-	shell.commands[6] = cmd_time;
+	shell.commands[7] = cmd_llpc;
 
-	shell.commands[7].__end = llpctrue;
+	shell.commands[8].__end = llpctrue;
+
+	shell.help = llpc_argpar_help(&shell.gap, LLPC_NULL);
+
+	if (!shell.help)
+	{
+		shell.initError = LLPC_SHEC_AllocError;
+		return shell;
+	}
 
 	shell.initError = LLPC_SHEC_OK;
 	shell.__initialized = llpctrue;
@@ -138,7 +198,7 @@ LLPC_ShellInfo llpc_shell_loop(LLPC_Shell *shell)
 			continue;
 		}
 
-		for (size_t i = 0; i < shell->commandsArrSize; ++i)
+		for (size_t i = 0 ; i < shell->commandsArrSize ; ++i)
 		{
 #if LLPC_DEV
 				if (llpc_strcmp(commandArr[0], "dev-force-exit") ||
@@ -157,7 +217,15 @@ LLPC_ShellInfo llpc_shell_loop(LLPC_Shell *shell)
 			if (llpc_strcmp(commandArr[0], cmd.command))
 			{
 				if (cmd.call)
-					cmd.call(splitted, commandArr);
+				{
+					shell->gap.argc = splitted;
+					shell->gap.argv = commandArr;
+
+					cmd.call(shell, splitted, commandArr);
+
+					shell->gap.argc = 0;
+					shell->gap.argv = LLPC_NULL;
+				}
 
 				else
 				{
@@ -185,6 +253,6 @@ LLPC_ShellInfo llpc_shell_loop(LLPC_Shell *shell)
 
 void llpc_shell_destroy(LLPC_Shell *shell)
 {
-
+	llpc_argpar_destroy(&shell->gap);
 }
 
