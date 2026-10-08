@@ -4,7 +4,6 @@
 #include <efi/efi.h>
 #include <efi/efilib.h>
 
-#include "llpc/lib/types.h"
 #include "llpc/lib/logging/logger.h"
 
 #ifdef __cplusplus
@@ -18,9 +17,9 @@
 LLPC_GLOBALS_OPEN
 
 // ("EP"): Error Protection
-#define LLPC_EP_FAIL_EXPR 	!LLPC_ImageHandle || !LLPC_SystemTable
-#define LLPC_UEFI_VERSION(major, minor) (((UINT32)(major) << 16) | ((UINT32)(minor) & 0xFFFF))
-#define LLPC_DEFAULT_NUM_PAGES 		16
+#define LLPC_EP_FAIL_EXPR 					!LLPC_ImageHandle || !LLPC_SystemTable
+#define LLPC_UEFI_VERSION(major, minor) 	(((UINT32)(major) << 16) | ((UINT32)(minor) & 0xFFFF))
+#define LLPC_DEFAULT_NUM_PAGES 				16
 
 #define LLPC_DECL_PAIR(PairName, _first, _second)   \
 	typedef struct LLPC_##PairName				 	\
