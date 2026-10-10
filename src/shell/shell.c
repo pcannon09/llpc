@@ -1,3 +1,4 @@
+#include "llpc/lib/string/parser.h"
 #include "llpc/predefines.h"
 
 #include "llpc/lib/alloc/calloc.h"
@@ -51,7 +52,7 @@ LLPC_Shell llpc_shell_init(unsigned int argc, char **argv)
 	cmd_echo.command = "echo";
 	cmd_echo.call = llpc_app_echo;
 
-	LLPC_ArgPar *echoHelp = llpc_calloc(1, sizeof(*echoHelp));
+	LLPC_ArgPar *echoHelp = llpc_calloc(1, sizeof(*echoHelp)); // Parent
 	LLPC_ArgPar *helpParam = llpc_calloc(1, sizeof(*helpParam));
 	LLPC_ArgPar *newlineParam = llpc_calloc(1, sizeof(*newlineParam));
 
@@ -85,7 +86,6 @@ LLPC_Shell llpc_shell_init(unsigned int argc, char **argv)
 
 	llpc_vector_pushBack(&echoHelp->subparams, helpParam);
 	llpc_vector_pushBack(&echoHelp->subparams, newlineParam);
-	llpc_vector_pushBack(&shell.gap.args, echoHelp);
 
 	LLPC_ShellCmdInfo cmd_exit = {0};
 	cmd_exit.command = "exit";
@@ -109,6 +109,41 @@ LLPC_Shell llpc_shell_init(unsigned int argc, char **argv)
 	cmd_llpc.command = "llpc";
 	cmd_llpc.call = llpc_app_llpc;
 
+	LLPC_ArgPar *llpcHelp = llpc_calloc(1, sizeof(*echoHelp));
+	LLPC_ArgPar *runLineParam = llpc_calloc(1, sizeof(*runLineParam));
+	LLPC_ArgPar *llpcHelpParam = llpc_calloc(1, sizeof(*llpcHelpParam));
+
+	if (!llpcHelp || !runLineParam)
+	{
+		LLPC_FREE(llpcHelp);
+		LLPC_FREE(runLineParam);
+		LLPC_FREE(runLineParam);
+
+		shell.initError = LLPC_SHEC_AllocError;
+		return shell;
+	}
+
+	*llpcHelp = llpc_argpar_sectorInit(
+			&shell.gap,
+			"llpc",
+			"Open an interactive or a CLI shell session",
+			llpctrue, llpctrue);
+
+	*llpcHelpParam = llpc_argpar_sectorInit(
+			&shell.gap,
+			"help",
+			"Get this help",
+			llpctrue, llpctrue);
+
+	*runLineParam = llpc_argpar_sectorInit(
+			&shell.gap,
+			"runline",
+			"Execute a line of code inside a string",
+			llpctrue, llpctrue);
+
+	llpc_vector_pushBack(&llpcHelp->subparams, runLineParam);
+	llpc_vector_pushBack(&llpcHelp->subparams, llpcHelpParam);
+
 	shell.commands[0] = cmd_echo;
 	shell.commands[1] = cmd_exit;
 	shell.commands[2] = cmd_proc;
@@ -128,17 +163,116 @@ LLPC_Shell llpc_shell_init(unsigned int argc, char **argv)
 		return shell;
 	}
 
+	llpc_vector_pushBack(&shell.gap.args, echoHelp);
+	llpc_vector_pushBack(&shell.gap.args, llpcHelp);
+
 	shell.initError = LLPC_SHEC_OK;
 	shell.__initialized = llpctrue;
 
 	return shell;
 }
 
-LLPC_ShellRetCode llpc_shell_exec(const char *procName,
-		unsigned int argc, char **argv)
+LLPC_ShellInfoStatus llpc_shell_runline(
+		LLPC_Shell *shell,
+		LLPC_ShellInfo *shinfo,
+		CHAR16 *commandBuff)
 {
+	llpc_strpar_skipWhitespaceC16(&commandBuff);
 
-	return 0;
+	LLPC_ShellInfoStatus retStatus = {0};
+	
+	if (shinfo)
+		retStatus.first = *shinfo;
+
+	if (!commandBuff && shinfo)
+	{
+		shinfo->code = LLPC_SHEC_SystemError;
+
+		retStatus.first = *shinfo;
+		return retStatus;
+	}
+
+	else if (!commandBuff && !shinfo)
+		return retStatus;
+
+	const size_t commandLen = llpc_strlen16(commandBuff);
+
+	char *command = llpc_calloc(commandLen + 1, sizeof(char));
+
+	if (!command)
+	{
+		shinfo->code = LLPC_SHEC_SystemError;
+
+		retStatus.first = *shinfo;
+		return retStatus;
+	}
+
+	llpc_toChar(command, commandBuff);
+
+	char **commandArr = LLPC_NULL;
+	const unsigned int splitted =
+		llpc_split(command, ' ', &commandArr);
+
+	if (splitted == 0 || !commandArr || !commandArr[0])
+	{
+		llpc_nullify(commandArr);
+		llpc_nullify(command);
+
+		retStatus.second = LLPC_SHRST_Continue;
+		return retStatus;
+	}
+
+#if LLPC_DEV
+		if (llpc_strcmp(commandArr[0], "dev-force-exit") ||
+				llpc_strcmp(commandArr[0], "dfe"))
+		{
+			retStatus.second = LLPC_SHRST_Break;
+			goto cleanup;
+		}
+#endif
+
+	for (size_t i = 0; i < shell->commandsArrSize; ++i)
+	{
+		const LLPC_ShellCmdInfo cmd = shell->commands[i];
+
+		if (cmd.__end)
+			break;
+
+		if (llpc_strcmp(commandArr[0], cmd.command))
+		{
+			if (cmd.call)
+			{
+				shell->gap.argc = splitted;
+				shell->gap.argv = commandArr;
+
+				cmd.call(shell, splitted, commandArr);
+
+				shell->gap.argc = 0;
+				shell->gap.argv = LLPC_NULL;
+			}
+
+			else
+			{
+				llpc_extlog(
+						LLPC_LL_Error,
+						"No such command call to: ",
+						llpcfalse);
+
+				CHAR16 cmdC16[llpc_strlen(cmd.command) + 1];
+
+				llpc_toChar16(cmdC16, cmd.command);
+				llpc_logecho(LLPC_LL_Error, cmdC16);
+			}
+
+			break;
+		}
+	}
+
+cleanup:
+	llpc_nullify(commandArr);
+	llpc_nullify(command);
+
+	return retStatus;
 }
 
 LLPC_ShellInfo llpc_shell_loop(LLPC_Shell *shell)
@@ -150,8 +284,6 @@ LLPC_ShellInfo llpc_shell_loop(LLPC_Shell *shell)
 		shinfo.code = LLPC_SHEC_SystemError;
 		return shinfo;
 	}
-
-	llpc_bool breakoutLoop = llpcfalse;
 
 	CHAR16 *commandBuff = llpc_calloc(8, sizeof(CHAR16));
 
@@ -173,80 +305,22 @@ LLPC_ShellInfo llpc_shell_loop(LLPC_Shell *shell)
 		if (shinfo.efiStatus != EFI_SUCCESS)
 		{
 			shinfo.code = LLPC_SHEC_EFI_Error;
-			return shinfo;
-		}
-
-		const size_t commandLen = llpc_strlen16(commandBuff);
-
-		char *command = llpc_calloc(commandLen + 1, sizeof(char));
-
-		if (!command)
-		{
-			shinfo.code = LLPC_SHEC_SystemError;
-			return shinfo;
-		}
-
-		llpc_toChar(command, commandBuff);
-
-		char **commandArr = LLPC_NULL;
-		const unsigned int splitted =
-			llpc_split(command, ' ', &commandArr);
-
-		if (splitted == 0 || !commandArr || !commandArr[0])
-		{
-			llpc_nullify(command);
-			continue;
-		}
-
-		for (size_t i = 0 ; i < shell->commandsArrSize ; ++i)
-		{
-#if LLPC_DEV
-				if (llpc_strcmp(commandArr[0], "dev-force-exit") ||
-						llpc_strcmp(commandArr[0], "dfe"))
-				{
-					breakoutLoop = llpctrue;
-					break;
-				}
-#endif
-
-			const LLPC_ShellCmdInfo cmd = shell->commands[i];
-
-			if (cmd.__end)
-				break;
-
-			if (llpc_strcmp(commandArr[0], cmd.command))
-			{
-				if (cmd.call)
-				{
-					shell->gap.argc = splitted;
-					shell->gap.argv = commandArr;
-
-					cmd.call(shell, splitted, commandArr);
-
-					shell->gap.argc = 0;
-					shell->gap.argv = LLPC_NULL;
-				}
-
-				else
-				{
-					llpc_extlog(LLPC_LL_Error, "No such command call to: ", llpcfalse);
-
-					CHAR16 cmdC16[llpc_strlen(cmd.command) + 1];
-
-					llpc_toChar16(cmdC16, cmd.command);
-					llpc_logecho(LLPC_LL_Error, cmdC16);
-				}
-
-				break;
-			}
-		}
-
-		llpc_nullify(commandArr);
-		llpc_nullify(command);
-
-		if (breakoutLoop)
 			break;
+		}
+
+		LLPC_ShellInfoStatus status =
+			llpc_shell_runline(shell, &shinfo, commandBuff);
+
+		shinfo = status.first;
+
+		if (status.second == LLPC_SHRST_Break)
+			break;
+		
+		else if (status.second == LLPC_SHRST_Continue)
+			continue;
 	}
+
+	llpc_nullify(commandBuff);
 
 	return shinfo;
 }

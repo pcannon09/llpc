@@ -1,6 +1,7 @@
 #ifndef INCLUDE_SHELL_SHELL_H_
 #define INCLUDE_SHELL_SHELL_H_
 
+#include "llpc/lib/globals.h"
 #include "llpc/lib/process/process.h"
 #include "llpc/shell/modules/argpar.h"
 
@@ -36,6 +37,7 @@ typedef enum LLPC_ShellErrorCode
 	LLPC_SHEC_EFI_Error,
 	LLPC_SHEC_ProcError,
 	LLPC_SHEC_AllocError,
+	LLPC_SHEC_ParamError,
 
 	__LLPC_SHEC_MAXERR 		= 255,
 
@@ -81,11 +83,23 @@ typedef struct LLPC_Shell
 	llpc_bool __initialized;
 } LLPC_Shell;
 
+typedef enum LLPC_ShellRetStatusCommand
+{
+	LLPC_SHRST_OK = 0,
+
+	LLPC_SHRST_Error,
+	LLPC_SHRST_Continue,
+	LLPC_SHRST_Break,
+
+	LLPC_SHRST_Done,
+} LLPC_ShellRetStatusCommand;
+
+LLPC_DECL_PAIR(ShellInfoStatus, LLPC_ShellInfo, LLPC_ShellRetStatusCommand);
+
 LLPC_Shell llpc_shell_init(unsigned int argc, char **argv);
 
-LLPC_ShellRetCode llpc_shell_exec(const char *procName,
-		unsigned int argc, char **argv);
 LLPC_ShellInfo llpc_shell_loop(LLPC_Shell *shell);
+LLPC_ShellInfoStatus llpc_shell_runline(LLPC_Shell *shell, LLPC_ShellInfo *shinfo, CHAR16 *commandBuff);
 
 void llpc_shell_destroy(LLPC_Shell *shell);
 
