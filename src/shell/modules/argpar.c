@@ -111,16 +111,24 @@ llpc_bool llpc_argpar_getItem(LLPC_ArgPar *ap,
 	return llpcfalse;
 }
 
-llpc_bool llpc_argpar_get(LLPC_GlobalArgPar *gap, const char *fullID)
+LLPC_ParamGotInfo llpc_argpar_get(LLPC_GlobalArgPar *gap, const char *fullID)
 {
+	LLPC_ParamGotInfo info = {0};
+
 	if (!gap || !gap->__initialized || !fullID)
-		return llpcfalse;
+	{
+		info.first = llpcfalse;
+		return info;
+	}
 
 	char **ids = NULL;
 	const unsigned int idCount = llpc_split(fullID, '.', &ids);
 
 	if (!ids || idCount == 0)
-		return llpcfalse;
+	{
+		info.first = llpcfalse;
+		return info;
+	}
 
 	LLPC_Vector *params = &gap->args;
 	LLPC_ArgPar *current = NULL;
@@ -145,7 +153,10 @@ llpc_bool llpc_argpar_get(LLPC_GlobalArgPar *gap, const char *fullID)
 		}
 
 		if (!current)
+		{
+			info.second = i;
 			goto cleanup;  // Execution exits here.
+		}
 
 		params = &current->subparams;
 	}
@@ -160,6 +171,7 @@ llpc_bool llpc_argpar_get(LLPC_GlobalArgPar *gap, const char *fullID)
 					 llpc_strcmp(gap->argv[i], current->sparam)))
 			{
 				found = llpctrue;
+				info.second = i;
 				break;
 			}
 		}
@@ -171,7 +183,8 @@ cleanup:
 
 	LLPC_FREE(ids);
 
-	return found;
+	info.first = found;
+	return info;
 }
 
 void llpc_argpar_sectorDestroy(LLPC_ArgPar *ap)
