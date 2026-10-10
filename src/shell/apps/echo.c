@@ -20,7 +20,7 @@ LLPC_APP_DECL(llpc_app_echo)
 	if (procSector.initError != LLPC_PROC_ERR_OK)
 		return LLPC_SHEC_ProcError;
 
-	if (llpc_argpar_get(&shell->gap, "echo.help"))
+	if (llpc_argpar_get(&shell->gap, "echo.help").first)
 	{
 		char *help = llpc_argpar_help(&shell->gap, "echo");
 
