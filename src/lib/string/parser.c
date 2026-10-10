@@ -10,6 +10,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+void llpc_strpar_skipWhitespaceC16(CHAR16 **ch16)
+{
+	while (LLPC_STR_ISWHITESPACE(**ch16))
+		(*ch16)++;
+}
+
+void llpc_strpar_skipWhitespace(char **ch)
+{
+	while (LLPC_STR_ISWHITESPACE(**ch))
+		(*ch)++;
+}
+
 char *llpc_strpar_argv2str(unsigned int start, unsigned int argc, char **argv)
 {
 	size_t len = 0;
